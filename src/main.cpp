@@ -1,11 +1,11 @@
-#include <application/app_colorcube.hpp>
+#include <application/app_shapealign.hpp>
 
 int main(int /* argc */, char ** /* argv */) {
     try {
         nanogui::init();
         
         /* scoped variables */ {
-            nanogui::ref<ColorcubeApplication> app = new ColorcubeApplication();
+            nanogui::ref<ShapeAlignApplication> app = new ShapeAlignApplication();
             app->drawAll();
             app->setVisible(true);
             nanogui::mainloop();

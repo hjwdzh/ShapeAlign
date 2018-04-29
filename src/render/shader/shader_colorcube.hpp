@@ -1,5 +1,5 @@
-#ifndef MODEL_SHADER_H_
-#define MODEL_SHADER_H_
+#ifndef COLORCUBE_SHADER_H_
+#define COLORCUBE_SHADER_H_
 
 #include "shader.hpp"
 

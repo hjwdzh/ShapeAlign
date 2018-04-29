@@ -25,4 +25,6 @@
 #include <nanogui/tabwidget.h>
 #include <nanogui/glcanvas.h>
 
+#define RESOURCE_DIR std::string("/Users/jingwei/Desktop/project/ShapeAlign/resources")
+
 #endif

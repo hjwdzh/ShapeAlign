@@ -35,10 +35,17 @@ set(
     src/render/shader/shader.hpp
     src/render/shader/shader_colorcube.cpp
     src/render/shader/shader_colorcube.hpp
+    src/render/shader/shader_model.cpp
+    src/render/shader/shader_model.hpp
     src/render/canvas/canvas_colorcube.hpp
     src/render/canvas/canvas_colorcube.cpp
+    src/render/canvas/canvas_model.hpp
+    src/render/canvas/canvas_model.cpp
     src/application/app_colorcube.hpp
     src/application/app_colorcube.cpp
+    src/application/app_shapealign.hpp
+    src/application/app_shapealign.cpp
+    src/io/objloader.hpp
 )
 
 add_executable(
