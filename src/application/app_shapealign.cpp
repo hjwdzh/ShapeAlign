@@ -9,9 +9,9 @@ ShapeAlignApplication::ShapeAlignApplication()
     window->setLayout(new GroupLayout());
     
     mCanvas = new ModelCanvas(window);
-    mCanvas->Init(RESOURCE_DIR + "/table1.obj");
+    mCanvas->AddElement(RESOURCE_DIR + "/table1.obj");
     mCanvas->setBackgroundColor({100, 100, 100, 255});
-    mCanvas->setSize({400, 400});
+    mCanvas->setSize({800, 600});
     
     Widget *tools = new Widget(window);
     tools->setLayout(new BoxLayout(Orientation::Horizontal,

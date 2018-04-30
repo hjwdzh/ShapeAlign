@@ -1,6 +1,7 @@
 #include "shader_model.hpp"
-using namespace nanogui;
 #include "shader_colorcube.hpp"
+#include <storage/objdata.hpp>
+
 using namespace nanogui;
 
 ModelShader::ModelShader()
@@ -203,6 +204,7 @@ void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
 
 void ModelShader::Draw()
 {
+    SetModelMatrix(OBJData::GetElement(filename)->model);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, map_Kd.texture());
     mShader.drawIndexed(GL_TRIANGLES, 0, num_indices);

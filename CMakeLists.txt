@@ -47,7 +47,9 @@ set(
     src/application/app_colorcube.cpp
     src/application/app_shapealign.hpp
     src/application/app_shapealign.cpp
-    src/io/objloader.hpp
+    src/storage/objloader.hpp
+    src/storage/objdata.hpp
+    src/storage/objdata.cpp
 )
 
 add_executable(

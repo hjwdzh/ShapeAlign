@@ -3,6 +3,9 @@
 #ifndef OBJLOADER_H_
 #define OBJLOADER_H_
 
+#include <Eigen/Core>
+#include <Eigen/Dense>
+
 // Iostream - STD I/O Library
 #include <iostream>
 
@@ -378,10 +381,11 @@ namespace objl
 	class Loader
 	{
 	public:
+		Eigen::Matrix4f model;
 		// Default Constructor
 		Loader()
 		{
-
+			model.setIdentity();
 		}
 		~Loader()
 		{

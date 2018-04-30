@@ -2,7 +2,7 @@
 #define MODEL_SHADER_H_
 
 #include "shader.hpp"
-#include <io/objloader.hpp>
+#include <storage/objloader.hpp>
 #include <render/gltexture.hpp>
 
 class ModelShader : public NanoShader
@@ -17,5 +17,6 @@ public:
 
     GLTexture map_Kd, map_Ka, map_Ks, map_d, map_bump;
     int num_indices;
+    std::string filename;
 };
 #endif

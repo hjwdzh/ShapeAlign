@@ -1,4 +1,5 @@
 #include "canvas_model.hpp"
+#include <storage/objdata.hpp>
 
 inline std::string GetDirectory(std::string filename) {
     std::string directory;
@@ -24,19 +25,16 @@ ModelCanvas::ModelCanvas(Widget *parent)
     world2cam = Eigen::Matrix4f::Identity();
     world2cam(2, 3) = 10.0;
     mouse_state = -1;
-    model.setIdentity();
     trans_scale = 4.0;
 }
 
-void ModelCanvas::Init(const std::string& filename) {
-    bool loadout = obj_model.LoadFile(filename);
-    if (!loadout) {
-        std::cerr << "Unable to load " << filename << "\n";
-        return;
-    }
-    mShaders.resize(obj_model.LoadedMeshes.size());
-    for (int i = 0; i < mShaders.size(); i++) {
-        mShaders[i].Init(obj_model.LoadedMeshes[i], GetDirectory(filename));
+void ModelCanvas::AddElement(const std::string& filename) {
+    objl::Loader* obj_model = OBJData::AddElement(filename);
+    mModelName.insert(filename);
+    for (int i = 0; i < obj_model->LoadedMeshes.size(); i++) {
+        mShaders.push_back(ModelShader());
+        mShaders.back().filename = filename;
+        mShaders.back().Init(obj_model->LoadedMeshes[i], GetDirectory(filename));
     }
 }
 
@@ -45,6 +43,7 @@ void ModelCanvas::drawGL() {
     
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
+    
     for (auto& mShader : mShaders) {
         mShader.bind();
         
@@ -54,14 +53,11 @@ void ModelCanvas::drawGL() {
         intrinsic(0, 2) = width() * 0.5f - 0.5f;
         intrinsic(1, 2) = height() * 0.5f - 0.5f;
 
-        mShader.SetModelMatrix(model);
         mShader.SetExtrinsic(world2cam);
         mShader.SetIntrinsic(intrinsic, width(), height());
-        /* Draw 12 triangles starting at index 0 */
-        for (int i = 0; i < mShaders.size(); ++i) {
-            mShaders[i].Draw();
-        }
+        mShader.Draw();
     }
+
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
 }
@@ -82,19 +78,26 @@ bool ModelCanvas::mouseMotionEvent(const Eigen::Vector2i &p, const Eigen::Vector
     Eigen::Vector2i pt = p - position();
     if (mouse_state == 0) {
         float rotX = -(pt[0] - mouse[0]) / (float)width() * 3.14;
-        Eigen::Matrix4f rotation = Eigen::Matrix4f::Identity();
-        rotation.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(rotX, Eigen::Vector3f::UnitY()));
         float rotY = -(pt[1] - mouse[1]) / (float)width() * 3.14;
-        model = rotation * model;
-        rotation.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(rotY, Eigen::Vector3f::UnitX()));
-        model = rotation * model;
+        Eigen::Matrix4f rotation = Eigen::Matrix4f::Identity();
+        Eigen::Matrix4f rotationY = Eigen::Matrix4f::Identity();
+        rotation.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(rotX, Eigen::Vector3f::UnitY()));
+        rotationY.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(rotY, Eigen::Vector3f::UnitX()));
+        for (auto& name : mModelName) {
+            auto obj = OBJData::GetElement(name);
+            obj->model = rotationY * rotation * obj->model;
+        }
         mouse = pt;
     } else
     if (mouse_state == 2) {
         float transX = -(pt[0] - mouse[0]) / (float)width();
         float transY = -(pt[1] - mouse[1]) / (float)width();
-        model(0, 3) -= transX * trans_scale;
-        model(1, 3) += transY * trans_scale;
+        
+        for (auto& name : mModelName) {
+            auto obj = OBJData::GetElement(name);
+            obj->model(0, 3) -= transX * trans_scale;
+            obj->model(1, 3) += transY * trans_scale;
+        }
         mouse = pt;
     }
     return true;
