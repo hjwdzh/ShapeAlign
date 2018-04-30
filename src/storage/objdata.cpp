@@ -21,6 +21,9 @@ objl::Loader* OBJData::AddElement(const std::string& filename)
 }
 
 objl::Loader* OBJData::GetElement(const std::string& filename) {
-	return &objdata[filename];
+    auto it = objdata.find(filename);
+    if (it == objdata.end())
+        return 0;
+	return &it->second;
 }
 

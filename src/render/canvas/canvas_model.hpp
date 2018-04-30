@@ -2,7 +2,6 @@
 #define MODEL_CANVAS_H_
 
 #include <render/shader/shader_model.hpp>
-#include <render/shader/shader_colorcube.hpp>
 #include <set>
 
 class ModelCanvas : public nanogui::GLCanvas {

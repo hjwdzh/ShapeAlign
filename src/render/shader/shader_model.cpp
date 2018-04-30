@@ -1,8 +1,10 @@
 #include "shader_model.hpp"
-#include "shader_colorcube.hpp"
 #include <storage/objdata.hpp>
 
 using namespace nanogui;
+
+int ModelShader::shared_shader_count = 0;
+nanogui::GLShader ModelShader::mShader;
 
 ModelShader::ModelShader()
 : num_indices(0)
@@ -11,6 +13,8 @@ ModelShader::ModelShader()
 
 void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
 {
+    shared_shader_count += 1;
+    if (shared_shader_count == 1) {
     mShader.init(
              "a_model_shader",
              
@@ -56,6 +60,7 @@ void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
              "uniform sampler2D map_d;\n"
              "uniform sampler2D map_bump;\n"
              "uniform int render_color;\n"
+             "uniform int enabled;\n"
              "out vec4 color;\n"
              "in vec3 frag_light;\n"
              "in vec4 frag_color;\n"
@@ -94,12 +99,14 @@ void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
              "\n"
              "      color = vec4(c, 1.0f);\n"
              "	}"
+             "  if (enabled == 0) color.xyz = color.xyz * 0.5f + vec3(0.5f,0.5f,0.5f);"
              "}"
              );
-    MatrixXf positions(3, mesh.Vertices.size());
-    MatrixXf colors(3, mesh.Vertices.size());
-    MatrixXf normals(3, mesh.Vertices.size());
-    MatrixXf texcoords(3, mesh.Vertices.size());
+    }
+    positions = MatrixXf(3, mesh.Vertices.size());
+    colors = MatrixXf(3, mesh.Vertices.size());
+    normals = MatrixXf(3, mesh.Vertices.size());
+    texcoords = MatrixXf(3, mesh.Vertices.size());
 
     for (int i = 0; i < mesh.Vertices.size(); ++i) {
     	positions.col(i) << mesh.Vertices[i].Position.X, mesh.Vertices[i].Position.Y, mesh.Vertices[i].Position.Z;
@@ -108,7 +115,7 @@ void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
         texcoords.col(i) << mesh.Vertices[i].TextureCoordinate.X, 1.0 - mesh.Vertices[i].TextureCoordinate.Y, 0;
     }
     
-    MatrixXu indices(3, mesh.Indices.size() / 3);
+    indices = MatrixXu(3, mesh.Indices.size() / 3);
     for (int j = 0; j < mesh.Indices.size(); j += 3)
 	{
 		indices.col(j / 3) << mesh.Indices[j], mesh.Indices[j + 1], mesh.Indices[j + 2];
@@ -194,17 +201,19 @@ void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
         }
     }
 
-    mShader.uploadIndices(indices);
-    
-    mShader.uploadAttrib("position", positions);
-    mShader.uploadAttrib("color", colors);	
-    mShader.uploadAttrib("normal", normals);
-    mShader.uploadAttrib("texcoord", texcoords);
 }
 
 void ModelShader::Draw()
 {
+    mShader.uploadIndices(indices);
+    
+    mShader.uploadAttrib("position", positions);
+    mShader.uploadAttrib("color", colors);
+    mShader.uploadAttrib("normal", normals);
+    mShader.uploadAttrib("texcoord", texcoords);
+
     SetModelMatrix(OBJData::GetElement(filename)->model);
+    mShader.setUniform("enabled", OBJData::GetElement(filename)->selected);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, map_Kd.texture());
     mShader.drawIndexed(GL_TRIANGLES, 0, num_indices);

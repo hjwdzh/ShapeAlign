@@ -1,27 +1,49 @@
 #include "app_shapealign.hpp"
+#include <storage/objdata.hpp>
 
+ShapeAlignApplication* g_app = 0;
 ShapeAlignApplication::ShapeAlignApplication()
-: nanogui::Screen(Eigen::Vector2i(1024, 728), "ShapeAlign GUI", false) {
+: nanogui::Screen(Eigen::Vector2i(1500, 750), "ShapeAlign GUI", false) {
     using namespace nanogui;
     
-    Window *window = new Window(this, "GLCanvas Demo");
-    window->setPosition(Vector2i(15, 15));
-    window->setLayout(new GroupLayout());
+    window = new Window(this, "Model View");
+    window->setPosition(Vector2i(0, 0));
+    window->setLayout(new GridLayout());
+
+    tools = new Widget(window);
+    tools->setLayout(new BoxLayout(Orientation::Vertical,
+                                   Alignment::Middle, 0, 5));
+    g_app = this;
+    Button *b0 = new Button(tools, "Add Object");
+    b0->setCallback([this]() {
+        std::string filename = file_dialog({ {"obj", "3D model"} }, false);
+        if (OBJData::GetElement(filename) == 0) {
+            filenames.push_back(filename);
+            buttons.push_back(new Button(g_app->tools, GetFile(filename)));
+            buttons.back()->setFlags(Button::ToggleButton);
+            buttons.back()->setPushed(true);
+            buttons.back()->setChangeCallback([](bool state) {
+                for (int i = 0; i < g_app->buttons.size(); ++i) {
+                    if (g_app->buttons[i]->pushed()) {
+                        OBJData::GetElement(g_app->filenames[i])->selected = 1;
+                    } else {
+                        OBJData::GetElement(g_app->filenames[i])->selected = 0;
+                    }
+                }
+                printf("\n");
+            });
+        }
+        if (!filename.empty()) {
+            mCanvas->AddElement(filename);
+            OBJData::GetElement(filename)->selected = 1;
+        }
+        performLayout();
+    });
     
     mCanvas = new ModelCanvas(window);
-    mCanvas->AddElement(RESOURCE_DIR + "/table1.obj");
+//    mCanvas->AddElement(RESOURCE_DIR + "/table1.obj");
     mCanvas->setBackgroundColor({100, 100, 100, 255});
-    mCanvas->setSize({800, 600});
-    
-    Widget *tools = new Widget(window);
-    tools->setLayout(new BoxLayout(Orientation::Horizontal,
-                                   Alignment::Middle, 0, 5));
-    
-    Button *b0 = new Button(tools, "Random Color");
-    b0->setCallback([this]() { mCanvas->setBackgroundColor(Vector4i(rand() % 256, rand() % 256, rand() % 256, 255)); });
-    
-    Button *b1 = new Button(tools, "Random Rotation");
-    b1->setCallback([this]() { });
+    mCanvas->setSize({640, 480});
     
     performLayout();
 }

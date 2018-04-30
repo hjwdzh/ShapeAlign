@@ -33,4 +33,41 @@
 
 #define RESOURCE_DIR std::string("/Users/jingwei/Desktop/project/ShapeAlign/resources")
 
+inline std::string GetDirectory(std::string filename) {
+    std::string directory;
+    const size_t last_slash_idx = filename.rfind('\\');
+    if (std::string::npos != last_slash_idx)
+    {
+        directory = filename.substr(0, last_slash_idx);
+    } else {
+        const size_t last_slash_idx = filename.rfind('/');
+        if (std::string::npos != last_slash_idx)
+        {
+            directory = filename.substr(0, last_slash_idx);
+        } else {
+            directory = filename;
+        }
+    }
+    return directory;
+}
+
+inline std::string GetFile(std::string filename) {
+    std::string directory;
+    const size_t last_slash_idx = filename.rfind('\\');
+    if (std::string::npos != last_slash_idx)
+    {
+        directory = filename.substr(last_slash_idx + 1, filename.size() - last_slash_idx - 1);
+    } else {
+        const size_t last_slash_idx = filename.rfind('/');
+        if (std::string::npos != last_slash_idx)
+        {
+            directory = filename.substr(last_slash_idx + 1, filename.size() - last_slash_idx - 1);
+        } else {
+            directory = filename;
+        }
+    }
+    return directory;
+}
+
+
 #endif

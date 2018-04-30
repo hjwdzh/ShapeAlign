@@ -1,24 +1,6 @@
 #include "canvas_model.hpp"
 #include <storage/objdata.hpp>
 
-inline std::string GetDirectory(std::string filename) {
-    std::string directory;
-    const size_t last_slash_idx = filename.rfind('\\');
-    if (std::string::npos != last_slash_idx)
-    {
-        directory = filename.substr(0, last_slash_idx);
-    } else {
-        const size_t last_slash_idx = filename.rfind('/');
-        if (std::string::npos != last_slash_idx)
-        {
-            directory = filename.substr(0, last_slash_idx);
-        } else {
-            directory = filename;
-        }
-    }
-    return directory;
-}
-
 ModelCanvas::ModelCanvas(Widget *parent)
 : nanogui::GLCanvas(parent)
 {
@@ -46,7 +28,6 @@ void ModelCanvas::drawGL() {
     
     for (auto& mShader : mShaders) {
         mShader.bind();
-        
         Eigen::Matrix3f intrinsic = Eigen::Matrix3f::Zero();
         intrinsic(0, 0) = height() * 1.1f;
         intrinsic(1, 1) = height() * 1.1f;
@@ -76,7 +57,7 @@ bool ModelCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool do
 bool ModelCanvas::mouseMotionEvent(const Eigen::Vector2i &p, const Eigen::Vector2i &rel, int button, int modifiers)
 {
     Eigen::Vector2i pt = p - position();
-    if (mouse_state == 0) {
+    if (mouse_state == 0 || mouse_state == 1) {
         float rotX = -(pt[0] - mouse[0]) / (float)width() * 3.14;
         float rotY = -(pt[1] - mouse[1]) / (float)width() * 3.14;
         Eigen::Matrix4f rotation = Eigen::Matrix4f::Identity();
@@ -85,7 +66,8 @@ bool ModelCanvas::mouseMotionEvent(const Eigen::Vector2i &p, const Eigen::Vector
         rotationY.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(rotY, Eigen::Vector3f::UnitX()));
         for (auto& name : mModelName) {
             auto obj = OBJData::GetElement(name);
-            obj->model = rotationY * rotation * obj->model;
+            if (obj->selected || mouse_state == 0)
+                obj->model = rotationY * rotation * obj->model;
         }
         mouse = pt;
     } else
@@ -95,8 +77,10 @@ bool ModelCanvas::mouseMotionEvent(const Eigen::Vector2i &p, const Eigen::Vector
         
         for (auto& name : mModelName) {
             auto obj = OBJData::GetElement(name);
-            obj->model(0, 3) -= transX * trans_scale;
-            obj->model(1, 3) += transY * trans_scale;
+            if (obj->selected) {
+                obj->model(0, 3) -= transX * trans_scale;
+                obj->model(1, 3) += transY * trans_scale;
+            }
         }
         mouse = pt;
     }

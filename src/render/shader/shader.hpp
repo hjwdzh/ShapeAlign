@@ -9,13 +9,8 @@ public:
     NanoShader() {}
     virtual void Draw() = 0;
     ~NanoShader() {
-        mShader.free();
     }
-    void bind() {
-        mShader.bind();
-    }
-
-    nanogui::GLShader mShader;
+    virtual void bind() = 0;
 };
 
 #endif
