@@ -39,10 +39,15 @@ void ModelCanvas::drawGL() {
                                                    Eigen::AngleAxisf(mRotation[1]*fTime,  Vector3f::UnitY()) *
                                                    Eigen::AngleAxisf(mRotation[2]*fTime, Vector3f::UnitZ())) * 0.25f;
         
-        Matrix4f mvp = model * view * proj;
-        mShader.mShader.setUniform("modelViewProj", mvp);
+        Eigen::Matrix3f intrinsic = Eigen::Matrix3f::Zero();
+        intrinsic(0, 0) = 575;
+        intrinsic(1, 1) = 575;
+        intrinsic(0, 2) = 200;
+        intrinsic(1, 2) = 200;
+        view(2, 3) = 1.0f + fTime * 0.1f;
         mShader.mShader.setUniform("model", model);
-        mShader.mShader.setUniform("view", view);
+        mShader.SetExtrinsic(view);
+        mShader.SetIntrinsic(intrinsic, 400, 400);
         /* Draw 12 triangles starting at index 0 */
         for (int i = 0; i < mShaders.size(); ++i) {
             mShaders[i].Draw();

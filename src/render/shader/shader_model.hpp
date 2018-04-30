@@ -9,7 +9,8 @@ class ModelShader : public NanoShader
 public:
     ModelShader();
     void Init(const objl::Mesh& mesh);
-    
+    void SetIntrinsic(Eigen::Matrix3f intrinsic, float wx, float wy);
+    void SetExtrinsic(Eigen::Matrix4f world2cam);
     void Draw();
 
     int num_indices;

@@ -14,7 +14,10 @@ void ModelShader::Init(const objl::Mesh& mesh)
              "a_model_shader",
              
              "#version 330\n"
-             "uniform mat4 modelViewProj;\n"
+             "uniform float fx;\n"
+             "uniform float fy;\n"
+             "uniform float cx;\n"
+             "uniform float cy;\n"
              "uniform mat4 view;\n"
              "uniform mat4 model;\n"
              "uniform vec3 lightdir;\n"
@@ -32,10 +35,10 @@ void ModelShader::Init(const objl::Mesh& mesh)
              "	frag_texcoord = texcoord;\n"
              "	frag_light = normalize(lightdir);\n"
              "  frag_pos = (modelView * vec4(position, 1.0f)).xyz;\n"
-             "  frag_pos.z += 1.0f;\n"
+             //"  frag_pos.z += 1.0f;\n"
              "  frag_color = vec4(color, 1.0f);\n"
              "  frag_normal = (modelView * vec4(normal, 0.0f)).xyz;\n"
-             "  gl_Position = modelViewProj * vec4(position, 1.0f);\n"
+             "  gl_Position = vec4(frag_pos.x * fx + cx, frag_pos.y * fy + cy, -0.01 + 0.9 * frag_pos.z, frag_pos.z);\n"
              "}",
              
              "#version 330\n"
@@ -157,3 +160,16 @@ void ModelShader::Draw()
     mShader.drawIndexed(GL_TRIANGLES, 0, num_indices);
 }
 
+void ModelShader::SetIntrinsic(Eigen::Matrix3f intrinsic, float wx, float wy)
+{
+    mShader.bind();
+    mShader.setUniform("fx", intrinsic(0, 0) / wx * 2.0);
+    mShader.setUniform("fy", intrinsic(1, 1) / wy * 2.0);
+    mShader.setUniform("cx", intrinsic(0, 2) / wx * 2.0 - 1.0);
+    mShader.setUniform("cy", intrinsic(1, 2) / wy * 2.0 - 1.0);
+}
+
+void ModelShader::SetExtrinsic(Eigen::Matrix4f world2cam) {
+    mShader.bind();
+    mShader.setUniform("view", world2cam);
+}
