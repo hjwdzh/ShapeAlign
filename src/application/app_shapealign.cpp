@@ -21,7 +21,7 @@ ShapeAlignApplication::ShapeAlignApplication()
     b0->setCallback([this]() { mCanvas->setBackgroundColor(Vector4i(rand() % 256, rand() % 256, rand() % 256, 255)); });
     
     Button *b1 = new Button(tools, "Random Rotation");
-    b1->setCallback([this]() { mCanvas->setRotation(nanogui::Vector3f((rand() % 100) / 100.0f, (rand() % 100) / 100.0f, (rand() % 100) / 100.0f)); });
+    b1->setCallback([this]() { });
     
     performLayout();
 }

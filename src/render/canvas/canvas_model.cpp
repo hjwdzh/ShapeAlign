@@ -3,6 +3,11 @@
 ModelCanvas::ModelCanvas(Widget *parent)
 : nanogui::GLCanvas(parent), mRotation(nanogui::Vector3f(0.25f, 0.5f, 0.33f))
 {
+    world2cam = Eigen::Matrix4f::Identity();
+    world2cam(2, 3) = 10.0;
+    mouse_state = -1;
+    model.setIdentity();
+    trans_scale = 8.0;
 }
 
 void ModelCanvas::Init(const std::string& filename) {
@@ -17,11 +22,6 @@ void ModelCanvas::Init(const std::string& filename) {
     }
 }
 
-void ModelCanvas::setRotation(nanogui::Vector3f vRotation) {
-    mRotation = vRotation;
-}
-
-
 void ModelCanvas::drawGL() {
     using namespace nanogui;
     
@@ -29,25 +29,15 @@ void ModelCanvas::drawGL() {
     for (auto& mShader : mShaders) {
         mShader.bind();
         
-        Matrix4f view = Eigen::Matrix4f::Identity();
-        Matrix4f model, proj;
-        model.setIdentity();
-        proj.setIdentity();
-        float fTime = (float)glfwGetTime();
-        
-        model.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(mRotation[0]*fTime, Vector3f::UnitX()) *
-                                                   Eigen::AngleAxisf(mRotation[1]*fTime,  Vector3f::UnitY()) *
-                                                   Eigen::AngleAxisf(mRotation[2]*fTime, Vector3f::UnitZ())) * 0.25f;
-        
         Eigen::Matrix3f intrinsic = Eigen::Matrix3f::Zero();
-        intrinsic(0, 0) = 575;
-        intrinsic(1, 1) = 575;
-        intrinsic(0, 2) = 200;
-        intrinsic(1, 2) = 200;
-        view(2, 3) = 1.0f + fTime * 0.1f;
-        mShader.mShader.setUniform("model", model);
-        mShader.SetExtrinsic(view);
-        mShader.SetIntrinsic(intrinsic, 400, 400);
+        intrinsic(0, 0) = height() * 1.1f;
+        intrinsic(1, 1) = height() * 1.1f;
+        intrinsic(0, 2) = width() * 0.5f - 0.5f;
+        intrinsic(1, 2) = height() * 0.5f - 0.5f;
+
+        mShader.SetModelMatrix(model);
+        mShader.SetExtrinsic(world2cam);
+        mShader.SetIntrinsic(intrinsic, width(), height());
         /* Draw 12 triangles starting at index 0 */
         for (int i = 0; i < mShaders.size(); ++i) {
             mShaders[i].Draw();
@@ -55,3 +45,53 @@ void ModelCanvas::drawGL() {
     }
     glDisable(GL_DEPTH_TEST);
 }
+
+bool ModelCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers)
+{
+    if (button >= 0 && down) {
+        mouse = p - position();
+        mouse_state = button;
+    } else {
+        mouse_state = -1;
+    }
+    return true;
+}
+
+bool ModelCanvas::mouseMotionEvent(const Eigen::Vector2i &p, const Eigen::Vector2i &rel, int button, int modifiers)
+{
+    Eigen::Vector2i pt = p - position();
+    if (mouse_state == 0) {
+        float rotX = -(pt[0] - mouse[0]) / (float)width() * 3.14;
+        Eigen::Vector3f trans(world2cam(0, 3), world2cam(1, 3), world2cam(2, 3));
+        world2cam.col(3) << 0, 0, 0, 1;
+        Eigen::Matrix4f rotation = Eigen::Matrix4f::Identity();
+        rotation.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(rotX, Eigen::Vector3f::UnitY()));
+        float rotY = -(pt[1] - mouse[1]) / (float)width() * 3.14;
+        world2cam = rotation * world2cam;
+        rotation.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(rotY, Eigen::Vector3f::UnitX()));
+        world2cam = rotation * world2cam;
+        world2cam.col(3) << trans[0], trans[1], trans[2], 1;
+        mouse = pt;
+    } else
+    if (mouse_state == 1) {
+        float transX = -(pt[0] - mouse[0]) / (float)width();
+        float transY = -(pt[1] - mouse[1]) / (float)width();
+        world2cam(0, 3) -= transX * trans_scale;
+        world2cam(1, 3) += transY * trans_scale;
+        mouse = pt;
+    }
+    return true;
+}
+
+bool ModelCanvas::scrollEvent(const Eigen::Vector2i &p, const Eigen::Vector2f &rel)
+{
+    Eigen::Vector3f trans(world2cam(0, 3), world2cam(1, 3), world2cam(2, 3));
+    float s = (float)exp((rel[1]) > 0 ? 0.5 : -0.5);
+    trans_scale *= s;
+    trans *= s;
+    world2cam.col(3) << trans[0], trans[1], trans[2], 1;
+
+    return true;
+}
+
+

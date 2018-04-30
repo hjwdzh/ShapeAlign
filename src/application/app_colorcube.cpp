@@ -5,7 +5,7 @@ ColorcubeApplication::ColorcubeApplication()
     using namespace nanogui;
     
     Window *window = new Window(this, "GLCanvas Demo");
-    window->setPosition(Vector2i(15, 15));
+    window->setPosition(Vector2i(0, 0));
     window->setLayout(new GroupLayout());
     
     mCanvas = new ColorcubeCanvas(window);

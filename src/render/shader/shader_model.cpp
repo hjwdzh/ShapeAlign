@@ -173,3 +173,8 @@ void ModelShader::SetExtrinsic(Eigen::Matrix4f world2cam) {
     mShader.bind();
     mShader.setUniform("view", world2cam);
 }
+
+void ModelShader::SetModelMatrix(Eigen::Matrix4f model) {
+    mShader.bind();
+    mShader.setUniform("model", model);
+}
