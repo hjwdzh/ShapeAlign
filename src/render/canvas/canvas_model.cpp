@@ -29,14 +29,20 @@ void ModelCanvas::drawGL() {
     for (auto& mShader : mShaders) {
         mShader.bind();
         
-        Matrix4f mvp;
-        mvp.setIdentity();
+        Matrix4f view = Eigen::Matrix4f::Identity();
+        Matrix4f model, proj;
+        model.setIdentity();
+        proj.setIdentity();
         float fTime = (float)glfwGetTime();
-        mvp.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(mRotation[0]*fTime, Vector3f::UnitX()) *
+        
+        model.topLeftCorner<3,3>() = Eigen::Matrix3f(Eigen::AngleAxisf(mRotation[0]*fTime, Vector3f::UnitX()) *
                                                    Eigen::AngleAxisf(mRotation[1]*fTime,  Vector3f::UnitY()) *
                                                    Eigen::AngleAxisf(mRotation[2]*fTime, Vector3f::UnitZ())) * 0.25f;
-    
+        
+        Matrix4f mvp = model * view * proj;
         mShader.mShader.setUniform("modelViewProj", mvp);
+        mShader.mShader.setUniform("model", model);
+        mShader.mShader.setUniform("view", view);
         /* Draw 12 triangles starting at index 0 */
         for (int i = 0; i < mShaders.size(); ++i) {
             mShaders[i].Draw();

@@ -23,7 +23,7 @@ void ColorcubeCanvas::drawGL() {
                                                Eigen::AngleAxisf(mRotation[2]*fTime, Vector3f::UnitZ())) * 0.25f;
     
     mShader.mShader.setUniform("modelViewProj", mvp);
-    
+
     glEnable(GL_DEPTH_TEST);
     /* Draw 12 triangles starting at index 0 */
     mShader.Draw();
