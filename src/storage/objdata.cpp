@@ -27,3 +27,7 @@ objl::Loader* OBJData::GetElement(const std::string& filename) {
 	return &it->second;
 }
 
+void OBJData::RemoveElement(const std::string& filename) {
+    objdata.erase(filename);
+}
+

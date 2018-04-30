@@ -14,9 +14,9 @@ void ModelCanvas::AddElement(const std::string& filename) {
     objl::Loader* obj_model = OBJData::AddElement(filename);
     mModelName.insert(filename);
     for (int i = 0; i < obj_model->LoadedMeshes.size(); i++) {
-        mShaders.push_back(ModelShader());
-        mShaders.back().filename = filename;
-        mShaders.back().Init(obj_model->LoadedMeshes[i], GetDirectory(filename));
+        mShaders.push_back(new ModelShader());
+        mShaders.back()->filename = filename;
+        mShaders.back()->Init(obj_model->LoadedMeshes[i], GetDirectory(filename));
     }
 }
 
@@ -26,17 +26,24 @@ void ModelCanvas::drawGL() {
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_TEXTURE_2D);
     
+    int top = 0;
+    for (int i = 0; i < mShaders.size(); ++i) {
+        if (OBJData::GetElement(mShaders[i]->filename)) {
+            mShaders[top++] = mShaders[i];
+        }
+    }
+    mShaders.resize(top);
     for (auto& mShader : mShaders) {
-        mShader.bind();
+        mShader->bind();
         Eigen::Matrix3f intrinsic = Eigen::Matrix3f::Zero();
         intrinsic(0, 0) = height() * 1.1f;
         intrinsic(1, 1) = height() * 1.1f;
         intrinsic(0, 2) = width() * 0.5f - 0.5f;
         intrinsic(1, 2) = height() * 0.5f - 0.5f;
 
-        mShader.SetExtrinsic(world2cam);
-        mShader.SetIntrinsic(intrinsic, width(), height());
-        mShader.Draw();
+        mShader->SetExtrinsic(world2cam);
+        mShader->SetIntrinsic(intrinsic, width(), height());
+        mShader->Draw();
     }
 
     glDisable(GL_TEXTURE_2D);

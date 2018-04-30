@@ -17,7 +17,7 @@ public:
     
     Eigen::Matrix4f world2cam;
     
-    std::vector<ModelShader> mShaders;
+    std::vector<ModelShader*> mShaders;
     std::set<std::string> mModelName;
 private:
     Eigen::Vector2i mouse;

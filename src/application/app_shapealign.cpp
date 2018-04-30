@@ -40,8 +40,30 @@ ShapeAlignApplication::ShapeAlignApplication()
         performLayout();
     });
     
+    Button *b1 = new Button(tools, "Remove Object");
+    b1->setCallback([this]() {
+        std::vector<std::string> removed;
+        int top = 0;
+        for (int i = 0; i < g_app->buttons.size(); ++i) {
+            if (g_app->buttons[i]->pushed()) {
+                //delete buttons[i];
+                removed.push_back(g_app->filenames[i]);
+                g_app->tools->removeChild(g_app->buttons[i]);
+            } else {
+                buttons[top] = buttons[i];
+                filenames[top] = filenames[i];
+                top += 1;
+            }
+        }
+        for (int i = 0; i < removed.size(); ++i) {
+            OBJData::RemoveElement(removed[i]);
+        }
+        g_app->buttons.resize(top);
+        filenames.resize(top);
+        performLayout();
+    });
+    
     mCanvas = new ModelCanvas(window);
-//    mCanvas->AddElement(RESOURCE_DIR + "/table1.obj");
     mCanvas->setBackgroundColor({100, 100, 100, 255});
     mCanvas->setSize({640, 480});
     

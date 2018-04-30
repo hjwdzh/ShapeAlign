@@ -382,9 +382,11 @@ namespace objl
 	{
 	public:
 		Eigen::Matrix4f model;
+		int selected;
 		// Default Constructor
 		Loader()
 		{
+			selected = 0;
 			model.setIdentity();
 		}
 		~Loader()

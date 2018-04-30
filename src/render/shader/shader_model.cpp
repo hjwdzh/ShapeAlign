@@ -211,7 +211,7 @@ void ModelShader::Draw()
     mShader.uploadAttrib("color", colors);
     mShader.uploadAttrib("normal", normals);
     mShader.uploadAttrib("texcoord", texcoords);
-
+    
     SetModelMatrix(OBJData::GetElement(filename)->model);
     mShader.setUniform("enabled", OBJData::GetElement(filename)->selected);
     glActiveTexture(GL_TEXTURE0);
