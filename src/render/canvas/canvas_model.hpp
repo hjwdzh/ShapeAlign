@@ -22,7 +22,6 @@ private:
     float trans_scale;
     int mouse_state;
 	std::vector<ModelShader> mShaders;
-    Eigen::Vector3f mRotation;
     objl::Loader obj_model;
 };
 

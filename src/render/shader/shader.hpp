@@ -14,6 +14,7 @@ public:
     void bind() {
         mShader.bind();
     }
+
     nanogui::GLShader mShader;
 };
 
