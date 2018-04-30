@@ -25,6 +25,12 @@
 #include <nanogui/tabwidget.h>
 #include <nanogui/glcanvas.h>
 
+// Includes for the GLTexture class.
+#include <cstdint>
+#include <memory>
+#include <utility>
+
+
 #define RESOURCE_DIR std::string("/Users/jingwei/Desktop/project/ShapeAlign/resources")
 
 #endif

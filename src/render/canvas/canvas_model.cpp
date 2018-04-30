@@ -1,5 +1,23 @@
 #include "canvas_model.hpp"
 
+inline std::string GetDirectory(std::string filename) {
+    std::string directory;
+    const size_t last_slash_idx = filename.rfind('\\');
+    if (std::string::npos != last_slash_idx)
+    {
+        directory = filename.substr(0, last_slash_idx);
+    } else {
+        const size_t last_slash_idx = filename.rfind('/');
+        if (std::string::npos != last_slash_idx)
+        {
+            directory = filename.substr(0, last_slash_idx);
+        } else {
+            directory = filename;
+        }
+    }
+    return directory;
+}
+
 ModelCanvas::ModelCanvas(Widget *parent)
 : nanogui::GLCanvas(parent), mRotation(nanogui::Vector3f(0.25f, 0.5f, 0.33f))
 {
@@ -18,7 +36,7 @@ void ModelCanvas::Init(const std::string& filename) {
     }
     mShaders.resize(obj_model.LoadedMeshes.size());
     for (int i = 0; i < mShaders.size(); i++) {
-        mShaders[i].Init(obj_model.LoadedMeshes[i]);
+        mShaders[i].Init(obj_model.LoadedMeshes[i], GetDirectory(filename));
     }
 }
 
@@ -26,6 +44,7 @@ void ModelCanvas::drawGL() {
     using namespace nanogui;
     
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_TEXTURE_2D);
     for (auto& mShader : mShaders) {
         mShader.bind();
         
@@ -43,6 +62,7 @@ void ModelCanvas::drawGL() {
             mShaders[i].Draw();
         }
     }
+    glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
 }
 
@@ -73,7 +93,7 @@ bool ModelCanvas::mouseMotionEvent(const Eigen::Vector2i &p, const Eigen::Vector
         world2cam.col(3) << trans[0], trans[1], trans[2], 1;
         mouse = pt;
     } else
-    if (mouse_state == 1) {
+    if (mouse_state == 2) {
         float transX = -(pt[0] - mouse[0]) / (float)width();
         float transY = -(pt[1] - mouse[1]) / (float)width();
         world2cam(0, 3) -= transX * trans_scale;

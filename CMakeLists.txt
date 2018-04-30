@@ -32,6 +32,8 @@ set(
     ShapeAlign_SRC
     src/main.cpp
     src/nanogui_header.hpp
+    src/render/gltexture.cpp
+    src/render/gltexture.hpp
     src/render/shader/shader.hpp
     src/render/shader/shader_colorcube.cpp
     src/render/shader/shader_colorcube.hpp

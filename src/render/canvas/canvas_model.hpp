@@ -1,3 +1,6 @@
+#ifndef MODEL_CANVAS_H_
+#define MODEL_CANVAS_H_
+
 #include <render/shader/shader_model.hpp>
 #include <render/shader/shader_colorcube.hpp>
 
@@ -23,3 +26,4 @@ private:
     objl::Loader obj_model;
 };
 
+#endif

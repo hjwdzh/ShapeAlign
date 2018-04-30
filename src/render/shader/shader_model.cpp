@@ -8,7 +8,7 @@ ModelShader::ModelShader()
 {
 }
 
-void ModelShader::Init(const objl::Mesh& mesh)
+void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
 {
     mShader.init(
              "a_model_shader",
@@ -22,7 +22,7 @@ void ModelShader::Init(const objl::Mesh& mesh)
              "uniform mat4 model;\n"
              "uniform vec3 lightdir;\n"
              "in vec3 position;\n"
-             "in vec2 texcoord;\n"
+             "in vec3 texcoord;\n"
              "in vec3 normal;\n"
              "in vec3 color;\n"
              "out vec3 frag_light;\n"
@@ -32,10 +32,9 @@ void ModelShader::Init(const objl::Mesh& mesh)
              "out vec2 frag_texcoord;\n"
              "void main() {\n"
              "  mat4 modelView = view * model;\n"
-             "	frag_texcoord = texcoord;\n"
+             "	frag_texcoord = texcoord.xy;\n"
              "	frag_light = normalize(lightdir);\n"
              "  frag_pos = (modelView * vec4(position, 1.0f)).xyz;\n"
-             //"  frag_pos.z += 1.0f;\n"
              "  frag_color = vec4(color, 1.0f);\n"
              "  frag_normal = (modelView * vec4(normal, 0.0f)).xyz;\n"
              "  gl_Position = vec4(frag_pos.x * fx + cx, frag_pos.y * fy + cy, -0.01 + 0.9 * frag_pos.z, frag_pos.z);\n"
@@ -66,13 +65,13 @@ void ModelShader::Init(const objl::Mesh& mesh)
              "	if (render_color == 1)\n"
              "		color = frag_color;\n"
              "	else {\n"
-             "		vec3 c = Ka * lightcolor;\n"
+             "		vec3 c = Ka * vec3(0, 0, 0);\n"
              "		vec3 lightpos = normalize(frag_pos);\n"
              "		vec3 surface_normal = normalize(frag_normal);\n"
              "      float t = -dot(frag_light, surface_normal);\n"
              "		if (t > 0) {\n"
              "			vec3 reflect_dir = normalize(frag_pos);"
-             "			c += Kd * lightcolor * (t, -dot(surface_normal, reflect_dir));\n"
+             "			c += Kd * lightcolor * texture(map_Kd, frag_texcoord).rgb * (t, -dot(surface_normal, reflect_dir));\n"
              "		}\n"
              "\n"
              "\n"
@@ -99,12 +98,13 @@ void ModelShader::Init(const objl::Mesh& mesh)
     MatrixXf positions(3, mesh.Vertices.size());
     MatrixXf colors(3, mesh.Vertices.size());
     MatrixXf normals(3, mesh.Vertices.size());
-    MatrixXf texcoords(2, mesh.Vertices.size());
+    MatrixXf texcoords(3, mesh.Vertices.size());
+
     for (int i = 0; i < mesh.Vertices.size(); ++i) {
     	positions.col(i) << mesh.Vertices[i].Position.X, mesh.Vertices[i].Position.Y, mesh.Vertices[i].Position.Z;
     	colors.col(i) << mesh.Vertices[i].Color.X, mesh.Vertices[i].Color.Y, mesh.Vertices[i].Color.Z;
         normals.col(i) << mesh.Vertices[i].Normal.X, mesh.Vertices[i].Normal.Y, mesh.Vertices[i].Normal.Z;
-        texcoords.col(i) << mesh.Vertices[i].TextureCoordinate.X, mesh.Vertices[i].TextureCoordinate.Y;
+        texcoords.col(i) << mesh.Vertices[i].TextureCoordinate.X, 1.0 - mesh.Vertices[i].TextureCoordinate.Y, 0;
     }
     
     MatrixXu indices(3, mesh.Indices.size() / 3);
@@ -145,6 +145,52 @@ void ModelShader::Init(const objl::Mesh& mesh)
         mShader.setUniform("illum", mesh.MeshMaterial.illum);
         mShader.setUniform("lightdir",  Eigen::Vector3f(0.0f, 0.0f, 1.0f));
         mShader.setUniform("lightcolor",  Eigen::Vector3f(1.0f, 1.0f, 1.0f));
+        std::string texture_path = "";
+        if (!mesh.MeshMaterial.map_Ka.empty()) {
+            map_Ka = GLTexture("Ka");
+            if (mesh.MeshMaterial.map_Ka[0] == '/')
+                texture_path = mesh.MeshMaterial.map_Ka;
+            else
+                texture_path = path + "/" + mesh.MeshMaterial.map_Ka;
+            map_Ka.load(texture_path).get();
+            mShader.setUniform("map_Ka", 0);
+        }
+        if (!mesh.MeshMaterial.map_Kd.empty()) {
+            map_Kd = GLTexture("Kd");
+            if (mesh.MeshMaterial.map_Kd[0] == '/')
+                texture_path = mesh.MeshMaterial.map_Kd;
+            else
+                texture_path = path + "/" + mesh.MeshMaterial.map_Kd;
+            map_Kd.load(texture_path).get();
+            mShader.setUniform("map_Kd", 0);
+        }
+        if (!mesh.MeshMaterial.map_Ks.empty()) {
+            map_Ks = GLTexture("Ks");
+            if (mesh.MeshMaterial.map_Ks[0] == '/')
+                texture_path = mesh.MeshMaterial.map_Ks;
+            else
+                texture_path = path + "/" + mesh.MeshMaterial.map_Ks;
+            map_Ks.load(texture_path).get();
+            mShader.setUniform("map_Ks", 2);
+        }
+        if (!mesh.MeshMaterial.map_d.empty()) {
+            map_d = GLTexture("d");
+            if (mesh.MeshMaterial.map_d[0] == '/')
+                texture_path = mesh.MeshMaterial.map_d;
+            else
+                texture_path = path + "/" + mesh.MeshMaterial.map_d;
+            map_d.load(texture_path).get();
+            mShader.setUniform("map_d", 3);
+        }
+        if (!mesh.MeshMaterial.map_bump.empty()) {
+            map_bump = GLTexture("bump");
+            if (mesh.MeshMaterial.map_bump[0] == '/')
+                texture_path = mesh.MeshMaterial.map_bump;
+            else
+                texture_path = path + "/" + mesh.MeshMaterial.map_bump;
+            map_bump.load(texture_path).get();
+            mShader.setUniform("map_bump", 4);
+        }
     }
 
     mShader.uploadIndices(indices);
@@ -152,11 +198,13 @@ void ModelShader::Init(const objl::Mesh& mesh)
     mShader.uploadAttrib("position", positions);
     mShader.uploadAttrib("color", colors);	
     mShader.uploadAttrib("normal", normals);
-    mShader.uploadAttrib("texcoords", texcoords);
+    mShader.uploadAttrib("texcoord", texcoords);
 }
 
 void ModelShader::Draw()
 {
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, map_Kd.texture());
     mShader.drawIndexed(GL_TRIANGLES, 0, num_indices);
 }
 

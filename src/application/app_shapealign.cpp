@@ -9,7 +9,7 @@ ShapeAlignApplication::ShapeAlignApplication()
     window->setLayout(new GroupLayout());
     
     mCanvas = new ModelCanvas(window);
-    mCanvas->Init(RESOURCE_DIR + "/monkey.obj");
+    mCanvas->Init(RESOURCE_DIR + "/table1.obj");
     mCanvas->setBackgroundColor({100, 100, 100, 255});
     mCanvas->setSize({400, 400});
     
