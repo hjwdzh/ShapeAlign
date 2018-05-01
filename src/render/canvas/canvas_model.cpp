@@ -1,6 +1,8 @@
 #include "canvas_model.hpp"
 #include <storage/persistent.hpp>
+#include <application/app_shapealign.hpp>
 
+extern ShapeAlignApplication* g_app;
 ModelCanvas::ModelCanvas(Widget *parent)
 : nanogui::GLCanvas(parent)
 {
@@ -36,6 +38,8 @@ void ModelCanvas::drawGL() {
     }
     mShaders.resize(top);
     for (auto& mShader : mShaders) {
+        if (g_app->view_pt == 0 && strcmp(mShader->filename.c_str(), "sens") == 0)
+            continue;
         mShader->bind();
         Eigen::Matrix3f intrinsic = Eigen::Matrix3f::Zero();
         intrinsic(0, 0) = height() * 1.1f;
@@ -43,13 +47,26 @@ void ModelCanvas::drawGL() {
         intrinsic(0, 2) = width() * 0.5f - 0.5f;
         intrinsic(1, 2) = height() * 0.5f - 0.5f;
 
-        mShader->SetExtrinsic(world2cam);
+        if (g_app->view_extrinsic && sens_data.selected < sens_data.frames) {
+            cv::Mat m = sens_data.cam2world[sens_data.selected].inv();
+            Eigen::Matrix4f extrinsic;
+            extrinsic.setIdentity();
+            for (int i = 0; i < 4; ++i) {
+                for (int j = 0; j < 4; ++j) {
+                    extrinsic(i, j) = m.at<float>(i, j);
+                }
+            }
+            mShader->SetExtrinsic(extrinsic);
+        } else {
+            mShader->SetExtrinsic(world2cam);
+        }
         mShader->SetIntrinsic(intrinsic, width(), height());
         mShader->Draw();
     }
 
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
+    
 }
 
 bool ModelCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers)

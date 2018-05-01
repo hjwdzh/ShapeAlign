@@ -7,9 +7,6 @@ extern ShapeAlignApplication* g_app;
 
 void ImageCanvas::AddElement(const std::string& filename) {
     objl::Loader* obj_model = OBJData::AddElement(filename);
-    if (strcmp(filename.c_str(), "sens") == 0) {
-        printf("Fuck!\n");
-    }
     for (int i = 0; i < obj_model->LoadedMeshes.size(); i++) {
         mShaders.push_back(new ModelShader());
         mShaders.back()->filename = filename;
@@ -62,7 +59,42 @@ void ImageCanvas::drawGL()
         mShader->SetIntrinsic(intrinsic, width(), height());
         mShader->Draw();
     }
-    
+
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
+    
+    Eigen::MatrixXf positions(3, keypoints.size() / 2), colors(3, keypoints.size() / 2);
+    for (int i = 0; i < keypoints.size(); i += 2) {
+        if (keyframes[i / 2] == sens_data.selected)
+            positions.col(i / 2) << keypoints[i], -keypoints[i + 1], 0;
+        else
+            positions.col(i / 2) << -2, -2, 0;
+        colors.col(i / 2) = g_app->color_pts[i / 2];
+    }
+    glPointSize(10.0);
+    ModelShader::mShader.bind();
+    ModelShader::mShader.uploadAttrib("position", positions);
+    ModelShader::mShader.uploadAttrib("color", colors);
+    ModelShader::mShader.setUniform("render_2d", 1);
+    ModelShader::mShader.setUniform("render_color", 1);
+    ModelShader::mShader.drawArray(GL_POINTS, 0, positions.size() / 3);
 }
+
+bool ImageCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers)
+{
+    if (sens_data.selected >= sens_data.frames)
+        return true;
+    Eigen::Vector2i pt = p - position();
+    if (button == 0 && down) {
+        keypoints.push_back(pt[0] / (float)width() * 2.0f - 1.0f);
+        keypoints.push_back(pt[1] / (float)height() * 2.0f - 1.0f);
+        keyframes.push_back(sens_data.selected);
+    }
+    if (button == 1 && down) {
+        keypoints.pop_back();
+        keypoints.pop_back();
+        keyframes.pop_back();
+    }
+    return true;
+}
+

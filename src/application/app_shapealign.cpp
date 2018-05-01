@@ -22,6 +22,10 @@ ShapeAlignApplication::ShapeAlignApplication()
 : nanogui::Screen(Eigen::Vector2i(1400, 600), "ShapeAlign GUI", false) {
     using namespace nanogui;
     
+    color_pts.resize(10000);
+    for (int i = 0; i < color_pts.size(); ++i) {
+        color_pts[i] = Eigen::Vector3f(rand() % 256 / 255.f, rand() % 256 / 255.f, rand() % 256 / 255.f);
+    }
     g_app = this;
 
     window = new Window(this, "Tools");
@@ -108,11 +112,21 @@ ShapeAlignApplication::ShapeAlignApplication()
             mCanvas->mShaders.resize(top);
             mCanvas->AddElement("sens");
         }
+        mCanvas->keypoints.clear();
+        nCanvas->keypoints.clear();
         performLayout();
     });
     
+    view_pt = 1;
     view_model = 1;
-    Button *b4 = new Button(window, "Show Model in Image");
+    view_extrinsic = 1;
+    Button *b34 = new Button(window, "Show PT");
+    b34->setFlags(Button::ToggleButton);
+    b34->setPushed(true);
+    b34->setChangeCallback([](bool state) {
+        g_app->view_pt = (state) ? 1 : 0;
+    });
+    Button *b4 = new Button(window, "Show Model");
     b4->setFlags(Button::ToggleButton);
     b4->setPushed(true);
     b4->setChangeCallback([](bool state) {
@@ -121,6 +135,11 @@ ShapeAlignApplication::ShapeAlignApplication()
     Button *b5 = new Button(window, "Add Keypoints");
     Button *b6 = new Button(window, "Remove Keypoints");
     Button *b7 = new Button(window, "Toggle Camera Transform");
+    b7->setFlags(Button::ToggleButton);
+    b7->setPushed(true);
+    b7->setChangeCallback([](bool state) {
+        g_app->view_extrinsic = (state) ? 1 : 0;
+    });
     Button *b8 = new Button(window, "Toggle Model Transform");
     Button *b9 = new Button(window, "Save Transform");
     window = new Window(this, "Model View");

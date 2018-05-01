@@ -12,13 +12,17 @@ public:
     {
     	imgShader.Init();
     }
+    
+    virtual bool mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers) override;
 
     void AddElement(const std::string& filename);
     ImageShader imgShader;
-    void drawGL();
+    void drawGL() override;
 
     std::vector<ModelShader*> mShaders;
     std::set<std::string> mModelName;
+    std::vector<int> keyframes;
+    std::vector<float> keypoints;
 };
 
 #endif

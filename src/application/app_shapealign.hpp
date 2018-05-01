@@ -11,7 +11,10 @@ public:
     std::vector<Button*> buttons;
     std::vector<GLTexture> textures;
     std::vector<std::string> filenames;
+    std::vector<Eigen::Vector3f> color_pts;
     int view_model;
+    int view_pt;
+    int view_extrinsic;
     int sens_count;
 private:
     ModelCanvas *mCanvas;

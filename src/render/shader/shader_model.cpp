@@ -26,6 +26,7 @@ void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
              "uniform mat4 view;\n"
              "uniform mat4 model;\n"
              "uniform vec3 lightdir;\n"
+             "uniform int render_2d;\n"
              "in vec3 position;\n"
              "in vec3 texcoord;\n"
              "in vec3 normal;\n"
@@ -42,7 +43,10 @@ void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
              "  frag_pos = (modelView * vec4(position, 1.0f)).xyz;\n"
              "  frag_color = vec4(color, 1.0f);\n"
              "  frag_normal = (modelView * vec4(normal, 0.0f)).xyz;\n"
+             "  if (render_2d == 0)\n"
              "  gl_Position = vec4(frag_pos.x * fx + cx, -frag_pos.y * fy + cy, -0.01 + 0.9 * frag_pos.z, frag_pos.z);\n"
+             "  else\n"
+             "  gl_Position = vec4(position.x, position.y, 0, 1);\n"
              "}",
              
              "#version 330\n"
@@ -219,12 +223,15 @@ void ModelShader::Draw()
         mShader.setUniform("render_color", 0);
     }
     mShader.setUniform("enabled", OBJData::GetElement(filename)->selected);
+    ModelShader::mShader.setUniform("render_2d", 0);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, map_Kd.texture());
     if (indices.size())
         mShader.drawIndexed(GL_TRIANGLES, 0, num_indices);
-    else
+    else {
+        glPointSize(2.0);
         mShader.drawArray(GL_POINTS, 0, positions.size() / 3);
+    }
 }
 
 void ModelShader::SetIntrinsic(Eigen::Matrix3f intrinsic, float wx, float wy)
