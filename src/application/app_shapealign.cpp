@@ -32,25 +32,27 @@ ShapeAlignApplication::ShapeAlignApplication()
     Button *b0 = new Button(window, "Add Object");
     b0->setCallback([this]() {
         std::string filename = file_dialog({ {"obj", "3D model"} }, false);
-        if (OBJData::GetElement(filename) == 0) {
-            filenames.push_back(filename);
-            buttons.push_back(new Button(g_app->tools, GetFile(filename)));
-            buttons.back()->setFlags(Button::ToggleButton);
-            buttons.back()->setPushed(true);
-            buttons.back()->setChangeCallback([](bool state) {
-                for (int i = 0; i < g_app->buttons.size(); ++i) {
-                    if (g_app->buttons[i]->pushed()) {
-                        OBJData::GetElement(g_app->filenames[i])->selected = 1;
-                    } else {
-                        OBJData::GetElement(g_app->filenames[i])->selected = 0;
-                    }
-                }
-            });
-        }
         if (!filename.empty()) {
-            mCanvas->AddElement(filename);
-            nCanvas->AddElement(filename);
-            OBJData::GetElement(filename)->selected = 1;
+            if (OBJData::GetElement(filename) == 0) {
+                filenames.push_back(filename);
+                buttons.push_back(new Button(g_app->tools, GetFile(filename)));
+                buttons.back()->setFlags(Button::ToggleButton);
+                buttons.back()->setPushed(true);
+                buttons.back()->setChangeCallback([](bool state) {
+                    for (int i = 0; i < g_app->buttons.size(); ++i) {
+                        if (g_app->buttons[i]->pushed()) {
+                            OBJData::GetElement(g_app->filenames[i])->selected = 1;
+                        } else {
+                            OBJData::GetElement(g_app->filenames[i])->selected = 0;
+                        }
+                    }
+                });
+            }
+            if (!filename.empty()) {
+                mCanvas->AddElement(filename);
+                nCanvas->AddElement(filename);
+                OBJData::GetElement(filename)->selected = 1;
+            }
         }
         performLayout();
     });
@@ -95,17 +97,32 @@ ShapeAlignApplication::ShapeAlignApplication()
                 imgview->setFixedSize(Vector2i(64, 48));
                 imgview->setScale(0.1);
             }
+            int top = 0;
+            for (int i = 0; i < mCanvas->mShaders.size(); ++i) {
+                if (strcmp(mCanvas->mShaders[i]->filename.c_str(), "sens") == 0) {
+//                    delete mCanvas->mShaders[i];
+                } else {
+                    mCanvas->mShaders[top++] = mCanvas->mShaders[i];
+                }
+            }
+            mCanvas->mShaders.resize(top);
+            mCanvas->AddElement("sens");
         }
         performLayout();
     });
     
-    Button *b4 = new Button(window, "Toggle Visibility");
+    view_model = 1;
+    Button *b4 = new Button(window, "Show Model in Image");
+    b4->setFlags(Button::ToggleButton);
+    b4->setPushed(true);
+    b4->setChangeCallback([](bool state) {
+        g_app->view_model = (state) ? 1 : 0;
+    });
     Button *b5 = new Button(window, "Add Keypoints");
     Button *b6 = new Button(window, "Remove Keypoints");
     Button *b7 = new Button(window, "Toggle Camera Transform");
     Button *b8 = new Button(window, "Toggle Model Transform");
     Button *b9 = new Button(window, "Save Transform");
-
     window = new Window(this, "Model View");
     window->setPosition(Vector2i(15, 75));
     window->setLayout(new GridLayout());

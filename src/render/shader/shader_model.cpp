@@ -99,7 +99,7 @@ void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
              "\n"
              "      color = vec4(c, 1.0f);\n"
              "	}"
-             "  if (enabled == 0) color.xyz = color.xyz * 0.5f + vec3(0.5f,0.5f,0.5f);"
+             "  if (enabled == 0) color.xyz = (color.xyz-0.5) * 0.15f + vec3(0.392f,0.392f,0.392f);"
              "}"
              );
     }
@@ -213,6 +213,11 @@ void ModelShader::Draw()
     mShader.uploadAttrib("texcoord", texcoords);
     
     SetModelMatrix(OBJData::GetElement(filename)->model);
+    if (OBJData::GetElement(filename)->LoadedMeshes[0].MeshMaterial.name.empty()) {
+        mShader.setUniform("render_color", 1);
+    } else {
+        mShader.setUniform("render_color", 0);
+    }
     mShader.setUniform("enabled", OBJData::GetElement(filename)->selected);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, map_Kd.texture());

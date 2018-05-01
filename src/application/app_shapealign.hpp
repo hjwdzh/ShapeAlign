@@ -11,6 +11,8 @@ public:
     std::vector<Button*> buttons;
     std::vector<GLTexture> textures;
     std::vector<std::string> filenames;
+    int view_model;
+    int sens_count;
 private:
     ModelCanvas *mCanvas;
     ImageCanvas *nCanvas;

@@ -30,6 +30,8 @@ void ModelCanvas::drawGL() {
     for (int i = 0; i < mShaders.size(); ++i) {
         if (OBJData::GetElement(mShaders[i]->filename)) {
             mShaders[top++] = mShaders[i];
+        } else {
+            //delete mShaders[i];
         }
     }
     mShaders.resize(top);

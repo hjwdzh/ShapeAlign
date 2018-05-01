@@ -1,4 +1,5 @@
 #include "sens.h"
+#include "persistent.hpp"
 #include <fstream>
 #include <iostream>
 
@@ -41,6 +42,41 @@ SensData::SensData(const std::string& filename)
         fread(cam2world[i].data, sizeof(float), 16, fp);
     }
     fclose(fp);
+    
+    objl::Loader loader;
+    loader.selected = 1;
+    loader.LoadedMeshes.push_back(objl::Mesh());
+    
+    for (int i = 0; i < depths.size(); ++i) {
+        cv::Mat d = depths[i];
+        cv::Mat c;
+        cv::resize(colors[i], c, cv::Size(d.cols, d.rows));
+        
+        for (int j = 0; j < d.rows; j += 4) {
+            for (int k = 0; k < d.cols; k += 4) {
+                float depth = d.at<float>(j, k);
+                if (!(depth < 10000 && depth > 100))
+                    continue;
+                cv::Mat pt(4, 1, CV_32F);
+                pt.at<float>(2, 0) = depth * 1e-3f;
+                pt.at<float>(0, 0) = (k - intrinsic.at<float>(0, 2)) / intrinsic.at<float>(0, 0) * pt.at<float>(2, 0);
+                pt.at<float>(1, 0) = (j - intrinsic.at<float>(1, 2)) / intrinsic.at<float>(1, 1) * pt.at<float>(2, 0);
+                pt.at<float>(3, 0) = 1;
+                pt = cam2world[i] * pt;
+                cv::Vec3b p = c.at<cv::Vec3b>(j, k);
+                objl::Vertex v;
+                v.Color.X = p.val[0] / 255.0f;
+                v.Color.Y = p.val[1] / 255.0f;
+                v.Color.Z = p.val[2] / 255.0f;
+                v.Position.X = pt.at<float>(0, 0);
+                v.Position.Y = pt.at<float>(1, 0);
+                v.Position.Z = pt.at<float>(2, 0);
+                loader.LoadedMeshes.back().Vertices.push_back(v);
+            }
+        }
+    }
+    
+    OBJData::objdata[std::string("sens")] = loader;
 }
 
 void SensData::GenImages(const std::string& output_path)

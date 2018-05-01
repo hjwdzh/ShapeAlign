@@ -7,6 +7,9 @@ extern ShapeAlignApplication* g_app;
 
 void ImageCanvas::AddElement(const std::string& filename) {
     objl::Loader* obj_model = OBJData::AddElement(filename);
+    if (strcmp(filename.c_str(), "sens") == 0) {
+        printf("Fuck!\n");
+    }
     for (int i = 0; i < obj_model->LoadedMeshes.size(); i++) {
         mShaders.push_back(new ModelShader());
         mShaders.back()->filename = filename;
@@ -23,6 +26,9 @@ void ImageCanvas::drawGL()
     imgShader.SetTexture(g_app->textures[sens_data.frames]);
     imgShader.Draw();
 
+    if (g_app->view_model == 0)
+        return;
+    
     using namespace nanogui;
     
     glEnable(GL_DEPTH_TEST);
