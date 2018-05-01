@@ -24,11 +24,11 @@ SensData::SensData(const std::string& filename)
     colors.resize(frames);
     depths.resize(frames);
     cam2world.resize(frames);
-    std::cout << depth_width << " " << depth_height << " " << color_width << " " << color_height << " "
-    << frames << "\n";
-    std::cout << "Loading frames...\n";
+//    std::cout << depth_width << " " << depth_height << " " << color_width << " " << color_height << " "
+//    << frames << "\n";
+//    std::cout << "Loading frames...\n";
     for (int i = 0; i < frames; ++i) {
-        std::cout << "Loading " << i + 1 << " of " << frames << "\n";
+//        std::cout << "Loading " << i + 1 << " of " << frames << "\n";
         int len;
         fread(&len, sizeof(int), 1, fp);
         depths[i] = cv::Mat(depth_height, depth_width, CV_32F);

@@ -19,19 +19,17 @@ public:
 };
 ShapeAlignApplication* g_app = 0;
 ShapeAlignApplication::ShapeAlignApplication()
-: nanogui::Screen(Eigen::Vector2i(1400, 560), "ShapeAlign GUI", false) {
+: nanogui::Screen(Eigen::Vector2i(1400, 600), "ShapeAlign GUI", false) {
     using namespace nanogui;
     
-    window = new Window(this, "Model View");
-    window->setPosition(Vector2i(15, 15));
-    window->setLayout(new GridLayout());
-
-    tools = new Widget(window);
-    tools->setFixedSize(nanogui::Vector2i(0, 480));
-    tools->setLayout(new BoxLayout(Orientation::Vertical,
-                                   Alignment::Middle, 0, 5));
     g_app = this;
-    Button *b0 = new Button(tools, "Add Object");
+
+    window = new Window(this, "Tools");
+    window->setPosition(Vector2i(15, 7));
+    window->setLayout(new BoxLayout(Orientation::Horizontal,
+                                    Alignment::Middle, 0, 5));
+    
+    Button *b0 = new Button(window, "Add Object");
     b0->setCallback([this]() {
         std::string filename = file_dialog({ {"obj", "3D model"} }, false);
         if (OBJData::GetElement(filename) == 0) {
@@ -57,7 +55,7 @@ ShapeAlignApplication::ShapeAlignApplication()
         performLayout();
     });
     
-    Button *b1 = new Button(tools, "Remove Object");
+    Button *b1 = new Button(window, "Remove Object");
     b1->setCallback([this]() {
         std::vector<std::string> removed;
         int top = 0;
@@ -80,24 +78,7 @@ ShapeAlignApplication::ShapeAlignApplication()
         performLayout();
     });
     
-    mCanvas = new ModelCanvas(window);
-    mCanvas->setBackgroundColor({100, 100, 100, 255});
-    mCanvas->setSize({480, 480});
-    
-    frame_window = new Window(this, "Sens View");
-    
-    frame_window->setLayout(new GridLayout());
-    frame_window->setPosition(Vector2i(650, 15));
-    
-    frames = new Widget(frame_window);
-    frames->setLayout(new BoxLayout(Orientation::Vertical,
-                                   Alignment::Middle, 0, 5));
-    
-    vscroll = new VScrollPanel(frames);
-    vscroll->setFixedSize(nanogui::Vector2i(0, 480));
-    images = new Widget(vscroll);
-    images->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Vertical, nanogui::Alignment::Middle, 0, 0));
-    Button* b3 = new Button(images, "Open Sens");
+    Button* b3 = new Button(window, "Open Sens");
     b3->setCallback([this]() {
         std::string filename = file_dialog({ {"sens", "3D scanning data"} }, false);
         textures.clear();
@@ -117,9 +98,45 @@ ShapeAlignApplication::ShapeAlignApplication()
         }
         performLayout();
     });
+    
+    Button *b4 = new Button(window, "Toggle Visibility");
+    Button *b5 = new Button(window, "Add Keypoints");
+    Button *b6 = new Button(window, "Remove Keypoints");
+    Button *b7 = new Button(window, "Toggle Camera Transform");
+    Button *b8 = new Button(window, "Toggle Model Transform");
+    Button *b9 = new Button(window, "Save Transform");
+
+    window = new Window(this, "Model View");
+    window->setPosition(Vector2i(15, 75));
+    window->setLayout(new GridLayout());
+
+    tools = new Widget(window);
+    tools->setFixedSize(nanogui::Vector2i(128, 480));
+    tools->setLayout(new BoxLayout(Orientation::Vertical,
+                                   Alignment::Middle, 0, 5));
+    
+
+    mCanvas = new ModelCanvas(window);
+    mCanvas->setBackgroundColor({100, 100, 100, 255});
+    mCanvas->setSize({480, 480});
+    
+    frame_window = new Window(this, "Sens View");
+    
+    frame_window->setLayout(new GridLayout());
+    frame_window->setPosition(Vector2i(650, 75));
+    
+    frames = new Widget(frame_window);
+    
+    frames->setLayout(new BoxLayout(Orientation::Vertical,
+                                   Alignment::Middle, 0, 5));
+    
+    vscroll = new VScrollPanel(frames);
+    vscroll->setFixedSize(nanogui::Vector2i(96, 480));
+    images = new Widget(vscroll);
+    images->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Vertical, nanogui::Alignment::Middle, 0, 0));
 
     nCanvas = new ImageCanvas(frame_window);
-    nCanvas->setBackgroundColor({255, 100, 100, 255});
+    nCanvas->setBackgroundColor({100, 100, 100, 255});
     nCanvas->setSize({640, 480});
 
     performLayout();
