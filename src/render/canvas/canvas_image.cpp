@@ -23,8 +23,7 @@ void ImageCanvas::drawGL()
     imgShader.SetTexture(g_app->textures[sens_data.frames]);
     imgShader.Draw();
 
-    if (g_app->view_model == 0)
-        return;
+    if (g_app->view_model != 0) {
     
     using namespace nanogui;
     
@@ -62,6 +61,11 @@ void ImageCanvas::drawGL()
 
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
+        
+    }
+    
+    if (g_app->keypoint_mode == 0)
+        return;
     
     Eigen::MatrixXf positions(3, keypoints.size() / 2), colors(3, keypoints.size() / 2);
     for (int i = 0; i < keypoints.size(); i += 2) {
@@ -83,6 +87,8 @@ void ImageCanvas::drawGL()
 bool ImageCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers)
 {
     if (sens_data.selected >= sens_data.frames)
+        return true;
+    if (g_app->keypoint_mode == 0)
         return true;
     Eigen::Vector2i pt = p - position();
     if (button == 0 && down) {

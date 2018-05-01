@@ -20,6 +20,7 @@ public:
     std::vector<ModelShader*> mShaders;
     std::set<std::string> mModelName;
     std::vector<float> keypoints;
+    std::vector<int> keyframes;
 private:
     Eigen::Vector2i mouse;
     float trans_scale;

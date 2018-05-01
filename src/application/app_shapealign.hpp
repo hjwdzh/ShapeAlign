@@ -15,7 +15,7 @@ public:
     int view_model;
     int view_pt;
     int view_extrinsic;
-    int sens_count;
+    int keypoint_mode;
 private:
     ModelCanvas *mCanvas;
     ImageCanvas *nCanvas;

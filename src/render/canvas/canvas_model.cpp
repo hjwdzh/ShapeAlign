@@ -67,10 +67,87 @@ void ModelCanvas::drawGL() {
     glDisable(GL_TEXTURE_2D);
     glDisable(GL_DEPTH_TEST);
     
+    std::vector<Eigen::Vector3f> positions_vec, colors_vec;
+    std::vector<int> positions_ind;
+    for (int i = 0; i < keypoints.size(); i += 3) {
+        if (keyframes[i / 3] == sens_data.selected) {
+            positions_vec.push_back(Eigen::Vector3f(keypoints[i], keypoints[i + 1], keypoints[i + 2]));
+            colors_vec.push_back(g_app->color_pts[i / 3]);
+        }
+    }
+    Eigen::MatrixXf positions(3, positions_vec.size()), colors(3, colors_vec.size());
+    for (int i = 0; i < positions_vec.size(); ++i) {
+        positions.col(i) = positions_vec[i];
+        colors.col(i) = colors_vec[i];
+    }
+
+    ModelShader::mShader.bind();
+    if (g_app->view_extrinsic && sens_data.selected < sens_data.frames) {
+        cv::Mat m = sens_data.cam2world[sens_data.selected].inv();
+        Eigen::Matrix4f extrinsic;
+        extrinsic.setIdentity();
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                extrinsic(i, j) = m.at<float>(i, j);
+            }
+        }
+        ModelShader::mShader.setUniform("view", extrinsic);
+    } else {
+        ModelShader::mShader.setUniform("view", world2cam);
+    }
+    glPointSize(10.0);
+    ModelShader::mShader.uploadAttrib("position", positions);
+    ModelShader::mShader.uploadAttrib("color", colors);
+//    ModelShader::mShader.setUniform("render_2d", 1);
+    ModelShader::mShader.setUniform("render_color", 1);
+    ModelShader::mShader.drawArray(GL_POINTS, 0, positions.size() / 3);
 }
 
 bool ModelCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers)
 {
+    if (g_app->keypoint_mode && sens_data.selected < sens_data.frames) {
+        if (button == 1 && down) {
+            keyframes.pop_back();
+            keypoints.pop_back();
+            keypoints.pop_back();
+            keypoints.pop_back();
+            return true;
+        } else
+        if (!(button == 0 && down)) {
+            return true;
+        }
+        Eigen::Vector2i pt = p - position();
+        Eigen::Vector4f d(0, 0, 0, 1);
+        Eigen::Matrix3f intrinsic = Eigen::Matrix3f::Zero();
+        intrinsic(0, 0) = height() * 1.1f;
+        intrinsic(1, 1) = height() * 1.1f;
+        intrinsic(0, 2) = width() * 0.5f - 0.5f;
+        intrinsic(1, 2) = height() * 0.5f - 0.5f;
+
+        Eigen::Vector4f t((pt.x() - intrinsic(0, 2)) / intrinsic(0, 0),
+                          (pt.y() - intrinsic(1, 2)) / intrinsic(1, 1),
+                          1.0f, 0);
+        t.normalize();
+        cv::Mat m = sens_data.cam2world[sens_data.selected];
+        Eigen::Matrix4f extrinsic;
+        extrinsic.setIdentity();
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                extrinsic(i, j) = m.at<float>(i, j);
+            }
+        }
+        d = extrinsic * d;
+        t = extrinsic * t;
+        
+        Vector3f intersect_pt = OBJData::Intersect(d, t);
+        if (intersect_pt[0] < 1e20) {
+            keypoints.push_back(intersect_pt[0]);
+            keypoints.push_back(intersect_pt[1]);
+            keypoints.push_back(intersect_pt[2]);
+            keyframes.push_back(sens_data.selected);
+        }
+        return true;
+    }
     if (button >= 0 && down) {
         mouse = p - position();
         mouse_state = button;

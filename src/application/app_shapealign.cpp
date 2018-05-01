@@ -117,23 +117,28 @@ ShapeAlignApplication::ShapeAlignApplication()
         performLayout();
     });
     
-    view_pt = 1;
-    view_model = 1;
+    view_pt = 0;
+    view_model = 0;
     view_extrinsic = 1;
+    keypoint_mode = 0;
     Button *b34 = new Button(window, "Show PT");
     b34->setFlags(Button::ToggleButton);
-    b34->setPushed(true);
+    b34->setPushed(false);
     b34->setChangeCallback([](bool state) {
         g_app->view_pt = (state) ? 1 : 0;
     });
     Button *b4 = new Button(window, "Show Model");
     b4->setFlags(Button::ToggleButton);
-    b4->setPushed(true);
+    b4->setPushed(false);
     b4->setChangeCallback([](bool state) {
         g_app->view_model = (state) ? 1 : 0;
     });
-    Button *b5 = new Button(window, "Add Keypoints");
-    Button *b6 = new Button(window, "Remove Keypoints");
+    Button *b5 = new Button(window, "Keypoints");
+    b5->setFlags(Button::ToggleButton);
+    b5->setChangeCallback([](bool state) {
+        g_app->keypoint_mode = (state) ? 1 : 0;
+    });
+
     Button *b7 = new Button(window, "Toggle Camera Transform");
     b7->setFlags(Button::ToggleButton);
     b7->setPushed(true);
