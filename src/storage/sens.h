@@ -8,7 +8,10 @@ class SensData
 {
 public:
 	SensData()
-	{}
+	{
+        frames = 0;
+        selected = 0;
+    }
 	SensData(const std::string& filename);
 
 	void GenImages(const std::string& output_path);

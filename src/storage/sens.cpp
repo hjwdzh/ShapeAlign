@@ -4,6 +4,7 @@
 
 SensData::SensData(const std::string& filename)
 {
+    selected = 0;
 	FILE* fp = fopen(filename.c_str(), "rb");
     fread(&depth_width, sizeof(int), 1, fp);
     fread(&depth_height, sizeof(int), 1, fp);

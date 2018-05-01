@@ -51,6 +51,7 @@ ShapeAlignApplication::ShapeAlignApplication()
         }
         if (!filename.empty()) {
             mCanvas->AddElement(filename);
+            nCanvas->AddElement(filename);
             OBJData::GetElement(filename)->selected = 1;
         }
         performLayout();
@@ -117,7 +118,7 @@ ShapeAlignApplication::ShapeAlignApplication()
         performLayout();
     });
 
-    GLCanvas* nCanvas = new GLCanvas(frame_window);
+    nCanvas = new ImageCanvas(frame_window);
     nCanvas->setBackgroundColor({255, 100, 100, 255});
     nCanvas->setSize({640, 480});
 

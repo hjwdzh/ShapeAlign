@@ -1,4 +1,5 @@
 #include <render/canvas/canvas_model.hpp>
+#include <render/canvas/canvas_image.hpp>
 #include <map>
 
 class ShapeAlignApplication : public nanogui::Screen {
@@ -12,6 +13,7 @@ public:
     std::vector<std::string> filenames;
 private:
     ModelCanvas *mCanvas;
+    ImageCanvas *nCanvas;
     Window* window, *frame_window;
     
     Widget* tools, *frames, *images;

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 project(ShapeAlign)
 
 find_package(OpenGL REQUIRED)
+find_package(OpenCV REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -25,6 +26,7 @@ include_directories(src)
 include_directories(3rd)
 include_directories(3rd/nanogui)
 include_directories(3rd/eigen3)
+include_directories(OpenCV_INCLUDE_DIR)
 
 link_directories(3rd)
 
@@ -37,13 +39,19 @@ set(
     src/render/shader/shader.hpp
     src/render/shader/shader_model.cpp
     src/render/shader/shader_model.hpp
+    src/render/shader/shader_image.cpp
+    src/render/shader/shader_image.hpp
     src/render/canvas/canvas_model.hpp
     src/render/canvas/canvas_model.cpp
+    src/render/canvas/canvas_image.hpp
+    src/render/canvas/canvas_image.cpp
     src/application/app_shapealign.hpp
     src/application/app_shapealign.cpp
     src/storage/objloader.hpp
-    src/storage/objdata.hpp
-    src/storage/objdata.cpp
+    src/storage/persistent.hpp
+    src/storage/persistent.cpp
+    src/storage/sens.h
+    src/storage/sens.cpp
 )
 
 add_executable(
@@ -55,4 +63,5 @@ target_link_libraries(
     ShapeAlign
     nanogui
     ${OPENGL_LIBRARIES}
+    ${OpenCV_LIBRARIES}
 )

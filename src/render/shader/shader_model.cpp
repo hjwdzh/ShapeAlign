@@ -42,7 +42,7 @@ void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
              "  frag_pos = (modelView * vec4(position, 1.0f)).xyz;\n"
              "  frag_color = vec4(color, 1.0f);\n"
              "  frag_normal = (modelView * vec4(normal, 0.0f)).xyz;\n"
-             "  gl_Position = vec4(frag_pos.x * fx + cx, frag_pos.y * fy + cy, -0.01 + 0.9 * frag_pos.z, frag_pos.z);\n"
+             "  gl_Position = vec4(frag_pos.x * fx + cx, -frag_pos.y * fy + cy, -0.01 + 0.9 * frag_pos.z, frag_pos.z);\n"
              "}",
              
              "#version 330\n"
