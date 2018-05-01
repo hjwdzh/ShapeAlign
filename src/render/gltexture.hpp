@@ -2,6 +2,7 @@
 #define GLTEXTURE_H_
 
 #include <nanogui_header.hpp>
+#include <opencv2/opencv.hpp>
 
 class GLTexture {
 public:
@@ -38,7 +39,8 @@ public:
      *  Returns a handle type (an std::unique_ptr) to the loaded pixels.
      */
     handleType load(const std::string& fileName);
-    
+    void load(cv::Mat c);
+
 private:
     std::string mTextureName;
     GLuint mTextureId;

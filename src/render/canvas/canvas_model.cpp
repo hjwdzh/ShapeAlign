@@ -1,5 +1,5 @@
 #include "canvas_model.hpp"
-#include <storage/objdata.hpp>
+#include <storage/persistent.hpp>
 
 ModelCanvas::ModelCanvas(Widget *parent)
 : nanogui::GLCanvas(parent)

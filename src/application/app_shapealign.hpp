@@ -8,9 +8,13 @@ public:
     virtual void draw(NVGcontext *ctx);
     
     std::vector<Button*> buttons;
+    std::vector<GLTexture> textures;
     std::vector<std::string> filenames;
 private:
     ModelCanvas *mCanvas;
-    Window* window;
-    Widget* tools;
+    Window* window, *frame_window;
+    
+    Widget* tools, *frames, *images;
+    ImagePanel *imagePanel;
+    VScrollPanel *vscroll;
 };

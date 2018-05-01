@@ -1,10 +1,10 @@
 #include <application/app_shapealign.hpp>
 
-int main(int /* argc */, char ** /* argv */) {
+int main(int argc, char ** argv) {
     try {
         nanogui::init();
         
-        /* scoped variables */ {
+        {
             nanogui::ref<ShapeAlignApplication> app = new ShapeAlignApplication();
             app->drawAll();
             app->setVisible(true);
@@ -20,3 +20,4 @@ int main(int /* argc */, char ** /* argv */) {
     
     return 0;
 }
+

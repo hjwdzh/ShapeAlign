@@ -680,6 +680,20 @@ namespace objl
 					}
 				}
 			}
+            
+            if (MeshMatNames.empty() && Positions.size()) {
+                tempMesh = Mesh();
+                tempMesh.Vertices.resize(Positions.size());
+                for (int i = 0; i < tempMesh.Vertices.size(); ++i) {
+                    tempMesh.Vertices[i].Position = Positions[i];
+                    if (Colors.size() > i) {
+                        tempMesh.Vertices[i].Color = Colors[i];
+                    } else {
+                        tempMesh.Vertices[i].Color = Vector3(1, 1, 1);
+                    }
+                }
+                LoadedMeshes.push_back(tempMesh);
+            }
 
 			if (LoadedMeshes.empty() && LoadedVertices.empty() && LoadedIndices.empty())
 			{

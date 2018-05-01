@@ -1,4 +1,4 @@
-#include "objdata.hpp"
+#include "persistent.hpp"
 
 std::map<std::string, objl::Loader> OBJData::objdata;
 
@@ -31,3 +31,4 @@ void OBJData::RemoveElement(const std::string& filename) {
     objdata.erase(filename);
 }
 
+SensData sens_data;

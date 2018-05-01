@@ -1,5 +1,5 @@
 #include "shader_model.hpp"
-#include <storage/objdata.hpp>
+#include <storage/persistent.hpp>
 
 using namespace nanogui;
 
@@ -125,7 +125,7 @@ void ModelShader::Init(const objl::Mesh& mesh, const std::string& path)
     
     mShader.bind();
 
-    if (mesh.MeshMaterial.name.empty()) {
+    if (mesh.MeshMaterial.name.empty() || num_indices == 0) {
         mShader.setUniform("render_color", 1);
     } else {
         mShader.setUniform("render_color", 0);
@@ -216,7 +216,10 @@ void ModelShader::Draw()
     mShader.setUniform("enabled", OBJData::GetElement(filename)->selected);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, map_Kd.texture());
-    mShader.drawIndexed(GL_TRIANGLES, 0, num_indices);
+    if (indices.size())
+        mShader.drawIndexed(GL_TRIANGLES, 0, num_indices);
+    else
+        mShader.drawArray(GL_POINTS, 0, positions.size() / 3);
 }
 
 void ModelShader::SetIntrinsic(Eigen::Matrix3f intrinsic, float wx, float wy)

@@ -1,16 +1,33 @@
 #include "app_shapealign.hpp"
-#include <storage/objdata.hpp>
+#include <storage/persistent.hpp>
 
+class ImageViewSelect : public ImageView
+{
+public:
+    ImageViewSelect(Widget* parent, GLuint imageID, int _id)
+    : ImageView(parent, imageID), id(_id)
+    {
+    }
+    bool mouseButtonEvent(const Eigen::Vector2i &p, int button, bool down, int modifiers) {
+        if (button == 0 && down) {
+            sens_data.selected = id;
+        }
+        return true;
+    }
+
+    int id;
+};
 ShapeAlignApplication* g_app = 0;
 ShapeAlignApplication::ShapeAlignApplication()
-: nanogui::Screen(Eigen::Vector2i(1500, 750), "ShapeAlign GUI", false) {
+: nanogui::Screen(Eigen::Vector2i(1400, 560), "ShapeAlign GUI", false) {
     using namespace nanogui;
     
     window = new Window(this, "Model View");
-    window->setPosition(Vector2i(0, 0));
+    window->setPosition(Vector2i(15, 15));
     window->setLayout(new GridLayout());
 
     tools = new Widget(window);
+    tools->setFixedSize(nanogui::Vector2i(0, 480));
     tools->setLayout(new BoxLayout(Orientation::Vertical,
                                    Alignment::Middle, 0, 5));
     g_app = this;
@@ -30,7 +47,6 @@ ShapeAlignApplication::ShapeAlignApplication()
                         OBJData::GetElement(g_app->filenames[i])->selected = 0;
                     }
                 }
-                printf("\n");
             });
         }
         if (!filename.empty()) {
@@ -65,8 +81,46 @@ ShapeAlignApplication::ShapeAlignApplication()
     
     mCanvas = new ModelCanvas(window);
     mCanvas->setBackgroundColor({100, 100, 100, 255});
-    mCanvas->setSize({640, 480});
+    mCanvas->setSize({480, 480});
     
+    frame_window = new Window(this, "Sens View");
+    
+    frame_window->setLayout(new GridLayout());
+    frame_window->setPosition(Vector2i(650, 15));
+    
+    frames = new Widget(frame_window);
+    frames->setLayout(new BoxLayout(Orientation::Vertical,
+                                   Alignment::Middle, 0, 5));
+    
+    vscroll = new VScrollPanel(frames);
+    vscroll->setFixedSize(nanogui::Vector2i(0, 480));
+    images = new Widget(vscroll);
+    images->setLayout(new nanogui::BoxLayout(nanogui::Orientation::Vertical, nanogui::Alignment::Middle, 0, 0));
+    Button* b3 = new Button(images, "Open Sens");
+    b3->setCallback([this]() {
+        std::string filename = file_dialog({ {"sens", "3D scanning data"} }, false);
+        textures.clear();
+        if (!filename.empty()) {
+            sens_data = SensData(filename);
+            for (int i = 0; i < sens_data.colors.size(); ++i) {
+                char buffer[1024];
+                sprintf(buffer, "filename_%d", i);
+                cv::Mat c;
+                cv::resize(sens_data.colors[i], c, cv::Size(640, 480));
+                textures.push_back(GLTexture(buffer));
+                textures.back().load(c);
+                auto imgview = new ImageViewSelect(images, textures.back().texture(), i);
+                imgview->setFixedSize(Vector2i(64, 48));
+                imgview->setScale(0.1);
+            }
+        }
+        performLayout();
+    });
+
+    GLCanvas* nCanvas = new GLCanvas(frame_window);
+    nCanvas->setBackgroundColor({255, 100, 100, 255});
+    nCanvas->setSize({640, 480});
+
     performLayout();
 }
 

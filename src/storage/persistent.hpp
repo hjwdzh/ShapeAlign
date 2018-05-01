@@ -1,7 +1,8 @@
-#ifndef OBJDATA_H_
-#define OBJDATA_H_
+#ifndef PERSISTENT_H_
+#define PERSISTENT_H_
 
 #include "objloader.hpp"
+#include "sens.h"
 #include <map>
 class OBJData
 {
@@ -13,4 +14,5 @@ public:
     static std::map<std::string, objl::Loader> objdata;
 };
 
+extern SensData sens_data;
 #endif
