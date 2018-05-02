@@ -2,7 +2,7 @@
 #define PERSISTENT_H_
 
 #include "objloader.hpp"
-#include "sens.h"
+#include "sens.hpp"
 #include <map>
 class OBJData
 {

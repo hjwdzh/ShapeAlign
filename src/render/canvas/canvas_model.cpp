@@ -107,10 +107,12 @@ bool ModelCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool do
 {
     if (g_app->keypoint_mode && sens_data.selected < sens_data.frames) {
         if (button == 1 && down) {
-            keyframes.pop_back();
-            keypoints.pop_back();
-            keypoints.pop_back();
-            keypoints.pop_back();
+            if (keyframes.size() > 0) {
+                keyframes.pop_back();
+                keypoints.pop_back();
+                keypoints.pop_back();
+                keypoints.pop_back();
+            }
             return true;
         } else
         if (!(button == 0 && down)) {

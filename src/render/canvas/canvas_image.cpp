@@ -97,9 +97,11 @@ bool ImageCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool do
         keyframes.push_back(sens_data.selected);
     }
     if (button == 1 && down) {
+        if (keypoints.size() > 0) {
         keypoints.pop_back();
         keypoints.pop_back();
         keyframes.pop_back();
+        }
     }
     return true;
 }

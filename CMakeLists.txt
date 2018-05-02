@@ -3,6 +3,7 @@ project(ShapeAlign)
 
 find_package(OpenGL REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(Ceres REQUIRED)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -27,6 +28,7 @@ include_directories(3rd)
 include_directories(3rd/nanogui)
 include_directories(3rd/eigen3)
 include_directories(OpenCV_INCLUDE_DIR)
+include_directories(CERES_INCLUDE_DIRS)
 
 link_directories(3rd)
 
@@ -50,8 +52,10 @@ set(
     src/storage/objloader.hpp
     src/storage/persistent.hpp
     src/storage/persistent.cpp
-    src/storage/sens.h
+    src/storage/sens.hpp
     src/storage/sens.cpp
+    src/storage/pose.hpp
+    src/storage/pose.cpp
 )
 
 add_executable(
@@ -64,4 +68,5 @@ target_link_libraries(
     nanogui
     ${OPENGL_LIBRARIES}
     ${OpenCV_LIBRARIES}
+    ${CERES_LIBRARIES}
 )

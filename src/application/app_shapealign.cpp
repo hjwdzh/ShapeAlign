@@ -1,5 +1,6 @@
 #include "app_shapealign.hpp"
 #include <storage/persistent.hpp>
+#include <storage/pose.hpp>
 
 class ImageViewSelect : public ImageView
 {
@@ -88,6 +89,10 @@ ShapeAlignApplication::ShapeAlignApplication()
     b3->setCallback([this]() {
         std::string filename = file_dialog({ {"sens", "3D scanning data"} }, false);
         textures.clear();
+        mCanvas->keyframes.clear();
+        mCanvas->keypoints.clear();
+        nCanvas->keyframes.clear();
+        nCanvas->keypoints.clear();
         if (!filename.empty()) {
             sens_data = SensData(filename);
             for (int i = 0; i < sens_data.colors.size(); ++i) {
@@ -146,6 +151,11 @@ ShapeAlignApplication::ShapeAlignApplication()
         g_app->view_extrinsic = (state) ? 1 : 0;
     });
     Button *b8 = new Button(window, "Toggle Model Transform");
+    b8->setCallback([this](){
+        if (mCanvas->keyframes.size() > 0) {
+            EstimateModel(mCanvas->keypoints, nCanvas->keypoints, mCanvas->keyframes);
+        }
+    });
     Button *b9 = new Button(window, "Save Transform");
     window = new Window(this, "Model View");
     window->setPosition(Vector2i(15, 75));
