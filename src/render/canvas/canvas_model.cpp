@@ -3,6 +3,7 @@
 #include <application/app_shapealign.hpp>
 
 extern ShapeAlignApplication* g_app;
+
 ModelCanvas::ModelCanvas(Widget *parent)
 : nanogui::GLCanvas(parent)
 {

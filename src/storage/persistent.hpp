@@ -13,6 +13,7 @@ public:
     static void RemoveElement(const std::string& filename);
     static std::map<std::string, objl::Loader> objdata;
     static Eigen::Vector3f Intersect(Eigen::Vector4f d, Eigen::Vector4f t, std::string& filename);
+    static void SaveModelToFile(const std::string& filename);
 };
 
 extern SensData sens_data;

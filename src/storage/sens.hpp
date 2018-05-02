@@ -13,7 +13,7 @@ public:
         selected = 0;
     }
 	SensData(const std::string& filename);
-
+    
 	void GenImages(const std::string& output_path);
 	void GenMeta(const std::string& output_path);
 	void GenPointcloud(const std::string& output_path);

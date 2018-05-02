@@ -100,4 +100,33 @@ Eigen::Vector3f OBJData::Intersect(Eigen::Vector4f d, Eigen::Vector4f t, std::st
     return pts;
 }
 
+void OBJData::SaveModelToFile(const std::string& filename)
+{
+    std::ofstream os(filename);
+    for (auto& obj : objdata) {
+        if (strcmp(obj.first.c_str(), "sens") == 0)
+            continue;
+        os << "# " << obj.first << "\n";
+        for (int i = 0; i < sens_data.cam2world.size(); ++i) {
+            cv::Mat world2cam = sens_data.cam2world[i].inv();
+            Eigen::Matrix4f model = obj.second.model;
+            Eigen::Matrix4f world;
+            for (int j = 0; j < 4; ++j) {
+                for (int k = 0; k < 4; ++k) {
+                    world(j, k) = world2cam.at<float>(j, k);
+                }
+            }
+            world = world * model;
+            for (int j = 0; j < 4; ++j) {
+                for (int k = 0; k < 4; ++k) {
+                    os << world(j, k) << " ";
+                }
+            }
+            os << "\n";
+        }
+    }
+    os.close();
+}
+
+
 SensData sens_data;

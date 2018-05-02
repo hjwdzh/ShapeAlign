@@ -158,6 +158,10 @@ ShapeAlignApplication::ShapeAlignApplication()
         }
     });
     Button *b9 = new Button(window, "Save Transform");
+    b9->setCallback([this]() {
+        std::string filename = file_dialog({ {"txt", "3D model"} }, true);
+        OBJData::SaveModelToFile(filename);
+    });
     window = new Window(this, "Model View");
     window->setPosition(Vector2i(15, 75));
     window->setLayout(new GridLayout());
