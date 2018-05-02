@@ -1,4 +1,6 @@
 #include <application/app_shapealign.hpp>
+#include <storage/persistent.hpp>
+
 
 int main(int argc, char ** argv) {
     try {
@@ -17,7 +19,6 @@ int main(int argc, char ** argv) {
         std::cerr << error_msg << std::endl;
         return -1;
     }
-    
     return 0;
 }
 

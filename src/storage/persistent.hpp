@@ -17,4 +17,6 @@ public:
 };
 
 extern SensData sens_data;
+double rayIntersectsTriangle(const Eigen::Vector3f& v0, const Eigen::Vector3f& v1, const Eigen::Vector3f& v2,
+                             const Eigen::Vector3f &orig, const Eigen::Vector3f &dir);
 #endif

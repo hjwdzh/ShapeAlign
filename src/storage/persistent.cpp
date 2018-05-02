@@ -2,43 +2,29 @@
 
 std::map<std::string, objl::Loader> OBJData::objdata;
 
-double rayIntersectsTriangle(Eigen::Vector3f& tri0, Eigen::Vector3f& tri1, Eigen::Vector3f& tri2,
-                            Eigen::Vector3f& p, Eigen::Vector3f& d) {
-    Eigen::Vector3f e1, e2, h, s, q;
+double rayIntersectsTriangle(const Eigen::Vector3f& v0, const Eigen::Vector3f& v1, const Eigen::Vector3f& v2,
+                            const Eigen::Vector3f &orig, const Eigen::Vector3f &dir) {
+    float u, v, t;
+    Eigen::Vector3f v0v1 = v1 - v0;
+    Eigen::Vector3f v0v2 = v2 - v0;
+    Eigen::Vector3f pvec = dir.cross(v0v2);
+    float det = v0v1.dot(pvec);
+    // if the determinant is negative the triangle is backfacing
+    // if the determinant is close to 0, the ray misses the triangle
+    if (std::abs(det) < 1e-6f) return 1e30;
     
-    double a,f,u,v;
-    e1 = tri1 - tri0;
-    e2 = tri2 - tri0;
+    float invDet = 1 / det;
     
-    h = d.cross(e2);
-    a = e1.dot(h);
+    Eigen::Vector3f tvec = orig - v0;
+    u = tvec.dot(pvec) * invDet;
+    if (u < 0 || u > 1) return 1e30;
     
-    if (a > -0.00001 && a < 0.00001)
-        return 1e30;
+    Eigen::Vector3f qvec = tvec.cross(v0v1);
+    v = dir.dot(qvec) * invDet;
+    if (v < 0 || u + v > 1) return 1e30;
     
-    f = 1/a;
-    s = p - tri0;
-    u = f * s.dot(h);
-    
-    if (u < 0.0 || u > 1.0)
-        return 1e30;
-    
-    q = s.cross(e1);
-    v = f * d.dot(q);
-    
-    if (v < 0.0 || u + v > 1.0)
-        return 1e30;
-
-    // at this stage we can compute t to find out where
-    // the intersection point is on the line
-    double t = f * e2.dot(q);
-    
-    if (t > 0.00001) // ray intersection
-        return t;
-    
-    else // this means that there is a line intersection
-        // but not a ray intersection
-        return 1e30;
+    t = v0v2.dot(qvec) * invDet;
+    return t;
 }
 
 objl::Loader* OBJData::AddElement(const std::string& filename)
@@ -74,6 +60,9 @@ Eigen::Vector3f OBJData::Intersect(Eigen::Vector4f d, Eigen::Vector4f t, std::st
     Eigen::Vector3f pts(1e30, 1e30, 1e30);
     double dis = 1e30;
     for (auto& obj : objdata) {
+        if (strcmp(obj.first.c_str(), "sens") == 0) {
+            continue;
+        }
         Eigen::Matrix4f obj_mat = obj.second.model.inverse();
         Eigen::Vector4f d4 = obj_mat * d;
         Eigen::Vector4f t4 = obj_mat * t;
@@ -95,6 +84,25 @@ Eigen::Vector3f OBJData::Intersect(Eigen::Vector4f d, Eigen::Vector4f t, std::st
                     filename = obj.first;
                 }
             }
+        }
+        if (pts[0] > 1e20) {
+            {
+                std::ofstream os("/Users/jingwei/Desktop/model1.obj");
+                for (auto& v: obj.second.LoadedMeshes.begin()->Vertices) {
+                    os << "v " << v.Position.X << " " << v.Position.Y << " " << v.Position.Z << "\n";
+                }
+                for (int i = 0; i < obj.second.LoadedMeshes.begin()->Vertices.size(); i += 3) {
+                    os << "f " << i + 1 << " " << i + 2 << " " << i + 3 << "\n";
+                }
+                os.close();
+            }
+            {
+                std::ofstream os("/Users/jingwei/Desktop/model2.txt");
+                os << d3[0] << " " << d3[1] << " " << d3[2] << "\n";
+                os << t3[0] << " " << t3[1] << " " << t3[2] << "\n";
+                
+            }
+            exit(0);
         }
     }
     return pts;
