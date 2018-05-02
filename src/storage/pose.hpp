@@ -5,6 +5,6 @@
 #include <Eigen/Dense>
 #include <vector>
 
-Eigen::Matrix4f EstimateModel(std::vector<float>& pts, std::vector<float> kpts, std::vector<int>& frames);
+void EstimateModel(std::vector<float>& pts, std::vector<float> kpts, std::vector<int>& frames, std::vector<std::string>& filenames);
 
 #endif

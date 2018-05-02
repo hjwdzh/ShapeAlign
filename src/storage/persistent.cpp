@@ -70,7 +70,7 @@ void OBJData::RemoveElement(const std::string& filename) {
     objdata.erase(filename);
 }
 
-Eigen::Vector3f OBJData::Intersect(Eigen::Vector4f d, Eigen::Vector4f t) {
+Eigen::Vector3f OBJData::Intersect(Eigen::Vector4f d, Eigen::Vector4f t, std::string& filename) {
     Eigen::Vector3f pts(1e30, 1e30, 1e30);
     double dis = 1e30;
     for (auto& obj : objdata) {
@@ -92,6 +92,7 @@ Eigen::Vector3f OBJData::Intersect(Eigen::Vector4f d, Eigen::Vector4f t) {
                 if (dt < dis) {
                     dis = dt;
                     pts = d3 + t3 * dt;
+                    filename = obj.first;
                 }
             }
         }

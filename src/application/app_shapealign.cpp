@@ -91,6 +91,7 @@ ShapeAlignApplication::ShapeAlignApplication()
         textures.clear();
         mCanvas->keyframes.clear();
         mCanvas->keypoints.clear();
+        mCanvas->keymodels.clear();
         nCanvas->keyframes.clear();
         nCanvas->keypoints.clear();
         if (!filename.empty()) {
@@ -150,10 +151,10 @@ ShapeAlignApplication::ShapeAlignApplication()
     b7->setChangeCallback([](bool state) {
         g_app->view_extrinsic = (state) ? 1 : 0;
     });
-    Button *b8 = new Button(window, "Toggle Model Transform");
+    Button *b8 = new Button(window, "Compute Model Transform");
     b8->setCallback([this](){
         if (mCanvas->keyframes.size() > 0) {
-            EstimateModel(mCanvas->keypoints, nCanvas->keypoints, mCanvas->keyframes);
+            EstimateModel(mCanvas->keypoints, nCanvas->keypoints, mCanvas->keyframes, mCanvas->keymodels);
         }
     });
     Button *b9 = new Button(window, "Save Transform");

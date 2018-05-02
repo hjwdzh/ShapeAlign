@@ -53,10 +53,25 @@ struct ReprojectionError {
     }
 };
 
-Eigen::Matrix4f EstimateModel(std::vector<float>& pts, std::vector<float> kpts, std::vector<int>& frames)
+void EstimateModel(std::vector<float>& pts, std::vector<float> kpts, std::vector<int>& frames, std::vector<std::string>& filenames)
 {
+    std::map<std::string,std::vector<double> > model_matrices;
+    for (int i = 0; i < filenames.size(); ++i) {
+        model_matrices[filenames[i]] = std::vector<double>();
+    }
+    double R[9];
+    for (auto& m : model_matrices) {
+        Eigen::Matrix4f model = OBJData::GetElement(m.first)->model;
+        m.second.resize(6);
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                R[i * 3 + j] = model(j, i);
+            }
+            m.second[i + 3] = model(i, 3);
+        }
+        ceres::RotationMatrixToAngleAxis(R, m.second.data());
+    }
     ceres::Problem problem;
-    double model_transform[6] = {0};
     for (int i = 0, j = 0; i < pts.size(); i += 3, j += 2) {
         double px = pts[i], py = pts[i + 1], pz = pts[i + 2];
         cv::Mat intrinsic = sens_data.intrinsic;
@@ -66,6 +81,7 @@ Eigen::Matrix4f EstimateModel(std::vector<float>& pts, std::vector<float> kpts, 
         ReprojectionError::Create(observed_x, observed_y, px, py, pz, sens_data.cam2world[frames[i / 3]], intrinsic);
         auto error = ReprojectionError(observed_x, observed_y,
                                        px, py, pz, sens_data.cam2world[frames[i / 3]], intrinsic);
+        double* model_transform = model_matrices[filenames[i / 3]].data();
         double residuals[2];
         error.operator()(model_transform, residuals);
         problem.AddResidualBlock(cost_function,
@@ -78,17 +94,17 @@ Eigen::Matrix4f EstimateModel(std::vector<float>& pts, std::vector<float> kpts, 
     ceres::Solver::Summary summary;
     ceres::Solve(options, &problem, &summary);
 
-    double R[9];
-    ceres::AngleAxisToRotationMatrix(model_transform, R);
-    Eigen::Matrix4f tr;
-    tr.setIdentity();
-    for (int i = 0; i < 3; ++i) {
-        tr(i, 3) = model_transform[i + 3];
-        for (int j = 0; j < 3; ++j) {
-            tr(i, j) = R[j * 3 + i];
+    for (auto& m : model_matrices) {
+        double* model_transform = m.second.data();
+        ceres::AngleAxisToRotationMatrix(model_transform, R);
+        Eigen::Matrix4f tr;
+        tr.setIdentity();
+        for (int i = 0; i < 3; ++i) {
+            tr(i, 3) = model_transform[i + 3];
+            for (int j = 0; j < 3; ++j) {
+                tr(i, j) = R[j * 3 + i];
+            }
         }
-    }
-    for (auto& obj : OBJData::objdata) {
-        obj.second.model = tr;
+        OBJData::GetElement(m.first)->model = tr;
     }
 }

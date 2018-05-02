@@ -112,6 +112,7 @@ bool ModelCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool do
                 keypoints.pop_back();
                 keypoints.pop_back();
                 keypoints.pop_back();
+                keymodels.pop_back();
             }
             return true;
         } else
@@ -141,12 +142,14 @@ bool ModelCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool do
         d = extrinsic * d;
         t = extrinsic * t;
         
-        Vector3f intersect_pt = OBJData::Intersect(d, t);
+        std::string filename;
+        Vector3f intersect_pt = OBJData::Intersect(d, t, filename);
         if (intersect_pt[0] < 1e20) {
             keypoints.push_back(intersect_pt[0]);
             keypoints.push_back(intersect_pt[1]);
             keypoints.push_back(intersect_pt[2]);
             keyframes.push_back(sens_data.selected);
+            keymodels.push_back(filename);
         }
         return true;
     }

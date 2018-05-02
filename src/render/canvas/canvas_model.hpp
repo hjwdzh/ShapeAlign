@@ -19,6 +19,7 @@ public:
     
     std::vector<ModelShader*> mShaders;
     std::set<std::string> mModelName;
+    std::vector<std::string> keymodels;
     std::vector<float> keypoints;
     std::vector<int> keyframes;
 private:
