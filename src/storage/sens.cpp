@@ -2,7 +2,7 @@
 #include "persistent.hpp"
 #include <fstream>
 #include <iostream>
-
+#include <opencv2/opencv.hpp>
 SensData::SensData(const std::string& filename)
 {
     selected = 0;
@@ -21,27 +21,35 @@ SensData::SensData(const std::string& filename)
     intrinsic.at<float>(3, 3) = 1;
     extrinsic = cv::Mat::zeros(4, 4, CV_32F);
     fread(extrinsic.data, sizeof(float), 16, fp);
-    fread(&frames, sizeof(int), 1, fp);
+    //fread(&frames, sizeof(int), 1, fp);
+    frames = 1000;
     colors.resize(frames);
     depths.resize(frames);
     cam2world.resize(frames);
-//    std::cout << depth_width << " " << depth_height << " " << color_width << " " << color_height << " "
-//    << frames << "\n";
-//    std::cout << "Loading frames...\n";
+    std::cout << depth_width << " " << depth_height << " " << color_width << " " << color_height << " "
+    << frames << "\n";
+    std::cout << "Loading frames...\n";
     for (int i = 0; i < frames; ++i) {
-//        std::cout << "Loading " << i + 1 << " of " << frames << "\n";
-        int len;
+        std::cout << "Loading " << i + 1 << " of " << frames << "\n";
+        int len = 0;
         fread(&len, sizeof(int), 1, fp);
+        if (len != 1228800) {
+            frames = i;
+            break;
+        }
         depths[i] = cv::Mat(depth_height, depth_width, CV_32F);
         fread(depths[i].data, sizeof(unsigned char), len, fp);
         fread(&len, sizeof(int), 1, fp);
         cv::Mat raw = cv::Mat(1, len, CV_8U);
         fread(raw.data, sizeof(unsigned char), len, fp);
-        colors[i] = imdecode(raw, CV_LOAD_IMAGE_COLOR);
+        colors[i] = imdecode(raw, cv::IMREAD_COLOR);
         cam2world[i] = cv::Mat(4, 4, CV_32F);
         fread(cam2world[i].data, sizeof(float), 16, fp);
     }
     fclose(fp);
+    colors.resize(frames);
+    depths.resize(frames);
+    cam2world.resize(frames);
     
     objl::Loader loader;
     loader.selected = 1;
@@ -90,7 +98,7 @@ void SensData::GenImages(const std::string& output_path)
         cv::imwrite(buffer, depth);
         cv::Mat color;
         cv::resize(colors[i], color, cv::Size(depth.cols, depth.rows));
-        cv::cvtColor(color, color, CV_RGB2BGR);
+        cv::cvtColor(color, color, cv::COLOR_RGB2BGR);
         sprintf(buffer, "%s/%04d_color.png", output_path.c_str(), i + 1);
         cv::imwrite(buffer, color);
     }

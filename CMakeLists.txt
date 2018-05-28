@@ -70,3 +70,42 @@ target_link_libraries(
     ${OpenCV_LIBRARIES}
     ${CERES_LIBRARIES}
 )
+
+set(
+    Convert_SRC
+    src/convert.cpp
+    src/nanogui_header.hpp
+    src/render/gltexture.cpp
+    src/render/gltexture.hpp
+    src/render/shader/shader.hpp
+    src/render/shader/shader_model.cpp
+    src/render/shader/shader_model.hpp
+    src/render/shader/shader_image.cpp
+    src/render/shader/shader_image.hpp
+    src/render/canvas/canvas_model.hpp
+    src/render/canvas/canvas_model.cpp
+    src/render/canvas/canvas_image.hpp
+    src/render/canvas/canvas_image.cpp
+    src/application/app_shapealign.hpp
+    src/application/app_shapealign.cpp
+    src/storage/objloader.hpp
+    src/storage/persistent.hpp
+    src/storage/persistent.cpp
+    src/storage/sens.hpp
+    src/storage/sens.cpp
+    src/storage/pose.hpp
+    src/storage/pose.cpp
+)
+
+add_executable(
+    Convert
+    ${Convert_SRC}
+)
+
+target_link_libraries(
+    Convert
+    nanogui
+    ${OPENGL_LIBRARIES}
+    ${OpenCV_LIBRARIES}
+    ${CERES_LIBRARIES}
+)
