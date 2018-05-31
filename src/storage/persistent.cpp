@@ -97,12 +97,11 @@ Eigen::Vector3f OBJData::Intersect(Eigen::Vector4f d, Eigen::Vector4f t, std::st
                 os.close();
             }
             {
-                std::ofstream os("/Users/jingwei/Desktop/model2.txt");
-                os << d3[0] << " " << d3[1] << " " << d3[2] << "\n";
-                os << t3[0] << " " << t3[1] << " " << t3[2] << "\n";
-                
+                std::ofstream os("/Users/jingwei/Desktop/model2.obj");
+                for (int i = 0; i < 100; ++i) {
+                    os << "v " << d3[0] + t3[0] * i * 0.01 << " " << d3[1] + t3[1] * i * 0.01 << " " << d3[2] + t3[2] * i * 0.01 << "\n";
+                }
             }
-            exit(0);
         }
     }
     return pts;

@@ -72,7 +72,10 @@ void ModelCanvas::drawGL() {
     std::vector<int> positions_ind;
     for (int i = 0; i < keypoints.size(); i += 3) {
         if (keyframes[i / 3] == sens_data.selected) {
-            positions_vec.push_back(Eigen::Vector3f(keypoints[i], keypoints[i + 1], keypoints[i + 2]));
+            auto p = Eigen::Vector4f(keypoints[i], keypoints[i + 1], keypoints[i + 2], 1);
+            auto t = OBJData::GetElement(keymodels[i/3])->model;
+            p = t * p;
+            positions_vec.push_back(Eigen::Vector3f(p[0], p[1], p[2]));
             colors_vec.push_back(g_app->color_pts[i / 3]);
         }
     }
@@ -83,6 +86,8 @@ void ModelCanvas::drawGL() {
     }
 
     ModelShader::mShader.bind();
+    Eigen::Matrix4f identity = Eigen::Matrix4f::Identity();
+    ModelShader::mShader.setUniform("model", identity);
     if (g_app->view_extrinsic && sens_data.selected < sens_data.frames) {
         cv::Mat m = sens_data.cam2world[sens_data.selected].inv();
         Eigen::Matrix4f extrinsic;
@@ -135,10 +140,15 @@ bool ModelCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool do
         cv::Mat m = sens_data.cam2world[sens_data.selected];
         Eigen::Matrix4f extrinsic;
         extrinsic.setIdentity();
-        for (int i = 0; i < 4; ++i) {
-            for (int j = 0; j < 4; ++j) {
-                extrinsic(i, j) = m.at<float>(i, j);
+        if (g_app->view_extrinsic) {
+            for (int i = 0; i < 4; ++i) {
+                for (int j = 0; j < 4; ++j) {
+                    extrinsic(i, j) = m.at<float>(i, j);
+                }
             }
+        } else {
+            extrinsic = world2cam;
+            extrinsic = extrinsic.inverse().eval();
         }
         d = extrinsic * d;
         t = extrinsic * t;
@@ -151,6 +161,8 @@ bool ModelCanvas::mouseButtonEvent(const Eigen::Vector2i &p, int button, bool do
             keypoints.push_back(intersect_pt[2]);
             keyframes.push_back(sens_data.selected);
             keymodels.push_back(filename);
+        } else {
+            printf("Not found!\n");
         }
         return true;
     }
